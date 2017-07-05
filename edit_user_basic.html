@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="utf-8"></meta> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"></meta>
+    
+    <script src="/scripts/libs/mars-client.js"></script>		
+    <script src="/scripts/reports/tools.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+</head>
+
+<style type="text/css">
+.Data-Content
+{
+  line-height: 29px;
+}
+
+.Data-Label
+{
+  float: left;
+  width: 12%;
+  margin-right: 20px;
+}
+
+.Data-Inputs
+{
+  float: left;
+  width: 28%;
+}
+
+.AlignRight
+{
+  text-align: right;
+}
+</style>
+
+<body>     
+
+<h1 id="page_header" class="page-header" style="padding-bottom: 20px;">My account</h1>
+
+<input id="sel_user_file" type="file" style="display: none;" onchange="OnModifyPicture()"></input>
+<div id="alert_zone" class="container"></div>
+     
+<div style="margin-left: 20px; width: 150px; height: inherit; border:1px solid silver; float: left;" onclick="OnSelectPicture()">
+  <a href="#"><img id="user_pic" src="/images/add_user.png" style="width: 100%; height: inherit;"></img></a>
+</div>  
+<div class="Data-Content">
+  <div class="Data-Label"><div class="AlignRight">
+    <label>Name</label><br><br>
+    <label>DataSet</label><br><br>
+    <label>Group</label><br><br>
+    <label>Registry Time</label><br><br>
+    <label>Last login time</label><br><br>
+    <label>Last login IP</label><br><br>
+    <label>Login token</label><br><br>
+  </div></div>
+  <div class="Data-Inputs">
+    <input type="text" class="form-control" id="tb_usr_name"><br>
+    <input type="text" class="form-control" id="tb_usr_dataset" readonly><br>
+    <input type="text" class="form-control" id="tb_usr_group" readonly><br>
+    <input type="text" class="form-control" id="tb_usr_registrytime" readonly><br>
+    <input type="text" class="form-control" id="tb_usr_lastlogintime" readonly><br>
+    <input type="text" class="form-control" id="tb_usr_lastloginip" readonly><br>
+    <input type="text" class="form-control" id="tb_usr_token" readonly><br>
+  </div>
+  <div class="Data-Content">
+    <div class="Data-Label"><div class="AlignRight">
+    <label>Address</label><br><br>
+    <label>EMail</label><br><br>
+    <label>Birthday</label><br><br>
+    <label>Phone number 1</label><br><br>
+    <label>Phone number 2</label><br><br>
+    <label>Note</label><br><br>
+  </div></div>
+  <div class="Data-Inputs">
+    <input type="text" class="form-control" id="tb_usr_address"><br>
+    <input type="text" class="form-control" id="tb_usr_email"><br>
+    <input type="text" class="form-control" id="tb_usr_birthday"><br>
+    <input type="text" class="form-control" id="tb_usr_phone1"><br>
+    <input type="text" class="form-control" id="tb_usr_phone2"><br>
+    <input type="text" class="form-control" id="tb_usr_note"><br>
+    <div class="AlignRight">
+      <button type="button" class="btn btn-default" onclick="OnSubmitData()">Update</button>
+    </div>
+  </div>
+</div>
+  
+<script>   
+    //----- 
+    function AddAlert(_type, _title, _text)
+    {        
+        document.getElementById("alert_zone").innerHTML+='<div class="alert alert-'+_type+' fade in">'+
+                                     '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
+                                     '<strong>'+_title+'</strong>'+' : '+_text+'</div>';
+    } 
+    //----- 
+    function OnSubmitData()
+    {        
+        var _data=
+        {
+    		name: document.getElementById("tb_usr_name").value,
+			email: document.getElementById("tb_usr_email").value,
+			birthday: document.getElementById("tb_usr_birthday").value,
+			phone1: document.getElementById("tb_usr_phone1").value,
+			phone2: document.getElementById("tb_usr_phone2").value,
+			address: document.getElementById("tb_usr_address").value,
+			note: document.getElementById("tb_usr_note").value,
+			thumbnail: document.getElementById("user_pic").src,
+        }
+        
+        if(_User.UpdateUser(null, _data) == true)
+          AddAlert('success', 'Info update', 'success');
+        else
+          AddAlert('danger', 'Info update', 'fail');
+    } 
+    //----- 
+    function OnSelectPicture()
+    {      
+        var _select_file = document.getElementById("sel_user_file");
+        _select_file.click();
+    } 
+    //----- 
+    function OnModifyPicture()
+    {      
+        var _select_file = document.getElementById("sel_user_file");
+        
+        if(_select_file.files[0].size < 128*1024)
+        {
+          var _freader = new FileReader();
+          
+          _freader.readAsDataURL(_select_file.files[0]);         
+          _freader.onloadend = function(_event)
+          {
+            document.getElementById("user_pic").src=_event.target.result;
+          }
+        }
+        else
+          AddAlert('warning', 'Thumbnail', 'File size is more than 128kB');
+    } 
+    //----- 
+    function LoadData()
+    {      
+      var _data=_User.GetUserInfo();         
+      if( _data != null)
+      {
+        var _root = JSON.parse(_data);
+        
+        document.getElementById("tb_usr_name").value=_root.name;  
+        document.getElementById("tb_usr_dataset").value=_root.dataset;  
+        document.getElementById("tb_usr_email").value=_root.email;  
+        document.getElementById("tb_usr_birthday").value=_root.birthday;  
+        document.getElementById("tb_usr_phone1").value=_root.phone1;  
+        document.getElementById("tb_usr_phone2").value=_root.phone2;  
+        document.getElementById("tb_usr_address").value=_root.address;   
+        document.getElementById("tb_usr_group").value=_root.group;    
+        document.getElementById("tb_usr_registrytime").value=_root.reg_time;    
+        document.getElementById("tb_usr_lastlogintime").value=_root.last_login_time;    
+        document.getElementById("tb_usr_lastloginip").value=_root.last_ip;     
+        document.getElementById("tb_usr_note").value=_root.note;           
+        document.getElementById("user_pic").src=_root.thumbnail; 
+                
+        document.getElementById("tb_usr_token").value=_User.WasLogin(); 
+      }
+    }
+    //----- 
+    window.onload = function()
+    {                      
+      LoadData();   
+  	}
+</script>
+</body>
+</html>

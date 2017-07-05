@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Mars Cloud Login</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"></meta>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <!-- js / BS js -->
+	    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+	    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+	    <!-- Bootstrap Core CSS -->
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    	<!-- Custom Fonts -->
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    	<!-- Social btn CSS -->
+    	<link rel="stylesheet" href="css/bootstrap-social.css">
+    	<!-- Style -->
+	    <link rel="stylesheet" href="css/login_registry_style.css">
+	    
+	    <script src="/web/auth/login.js"></script>
+	</head>
+	
+	<body> 
+		<div id="alert_zone" class="container"></div> 
+	    <div class="cotainer">
+	    <header ><h1 class="login_header">MARS cloud system</h1></header>
+			      <form class="login_form_bg" name="_loginform" action="/web/main.html" id="_loginform" method="post">
+			      	<legend>Registry a User</legend>
+			      	<div class="login_wrap">
+			      		<button type="button" class="btn btn_theme registry" onclick="OnRegistryClick()" style="width: 100%; margin-top: 8px;">New account</button>
+
+						<!-- or hr -->
+				        <div class="login_or">
+					       <hr class="hr_or">
+					       <span class="span_or">or</span>
+					    </div>
+
+					    <div class="row">
+					       <div class="col-xs-6 col-sm-6 col-md-6">
+					       	 
+					         <button type="button" class="btn btn-block btn-social btn-google" onclick="OnRegistryByGoogleClick()"><i class="fa fa-google"></i>by Google</button>
+					       </div>
+					       <div class="col-xs-6 col-sm-6 col-md-6">
+					         <button type="button" class="btn btn-block btn-social btn-facebook" onclick="OnLoginByFBClick()"><i class="fa fa-facebook"></i>by Facebook</button>
+					       </div>
+					    </div>
+					    
+				    </div>
+			      </form>
+	    </div>
+	    
+<script>
+		  	//-----
+		    function AddAlert(_type, _title, _text)
+		    {        
+		        document.getElementById("alert_zone").innerHTML+='<div class="alert alert-'+_type+' fade in">'+
+		                                     '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
+		                                     '<strong>'+_title+'</strong>'+' : '+_text+'</div>';
+		    }  
+		  	//----
+		    function GotoMainPage()
+	    	{
+		    	window.location='/web/main.html';   			
+	    	}
+		  	//----
+	    	function OnRegistryClick()
+	    	{
+	    		if(WasLogin())
+		    	{
+		    		alert('Login already, please logout first!');
+		    		GotoMainPage();
+		    		return;
+		    	}	
+	    		
+	    		if (window.focus == false)
+	    			return;
+	    		
+	    		var _window=window.open('/web/auth/add_account.js', 'User Information', 'width=600, height=480, scrollbars=no');	    		
+	    		_window.onunload = function()
+	    		{ 
+	    			if(WasLogin())
+	    				GotoMainPage();
+	    		}
+	    	}
+	    	//----
+	    	function OnRegistryByGoogleClick()
+	    	{
+	    		if(WasLogin())
+		    	{
+		    		alert('Login already, please logout first!');
+		    		GotoMainPage();
+		    		return;
+		    	}	
+	    		
+	    		DoRegistryByGoogle('http://vpn.mars-semi.com.tw:8001/web/auth/google_oauth_registry.js');
+	    	}
+	    	//----
+	    	function OnRegistryByFBClick()
+	    	{	    		
+	    		alert('Not support yet ~');
+	    	}
+	    </script>
+	</body>
+</html>

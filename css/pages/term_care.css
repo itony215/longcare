@@ -1,0 +1,259 @@
+/*tab*/
+.nav-tabs{
+	margin-bottom: 20px;
+}
+
+/*生理資訊顯示區塊*/
+.item_wrap{
+	border: #dbdbdb 1px solid;
+}
+.item_content{
+	padding: 10px;
+	background-color: #fafafa;
+	border-bottom: #dbdbdb 1px solid;
+}
+.item_content img{
+	width: 36%;
+	height: auto;
+	margin-right: 2%;
+}
+.person_info{
+	display: inline-block;
+	/* float: right; */
+    width: 60%;
+    vertical-align: middle;
+}
+.item_tool{
+	margin-bottom: 2%;
+}
+.item_tool i{
+	float: right;
+	color: #ccc;
+}
+.item_tool i:hover{
+    color:  #2fbdf2;
+}
+.eventCodeStr{
+	font-size: 16px;
+}
+.person_info h2{
+	margin: 2% 0;
+	font-size: 30px;
+}
+.person_info p{
+	margin: 0 ;
+	font-size: 16px;
+}
+
+.item_row{
+	width: 100%;
+    display: table;
+    margin-top:0;
+    clear: both;
+    border-bottom: #dbdbdb 1px solid;
+}
+.item_group{
+    width: 50%;
+    display: table-cell;
+    padding: 5px;
+    text-align: center;
+    border-right: 1px solid #CCC;
+    border-left: 1px solid #FFF;
+}
+
+.time{
+	font-size: 12px;
+	display: block;
+    letter-spacing: 1px;
+    margin-top: 5px;
+    color: #999;
+}
+.item_group:last-child{
+	border-right: none;
+}
+.data_t{
+	font-size: 16px;
+	line-height: 24px;
+	/* float: left; */
+}
+.item_data{
+	font-size: 24px;
+	font-weight: 600;
+	padding-right: 0;
+	/* float: right; */
+	line-height: 24px;
+}
+.clear{
+	clear: both;
+}
+.item_other{
+	margin: 0;
+	font-size: 16px;
+	text-align: center;
+}
+/*翻身提醒*/
+/* .light_margin{
+	margin-bottom: 15px;
+}
+.light_margin span{
+	margin-right: 10px;
+}
+.light1,.light3{
+	display: inline-block;
+	margin-right: 5px;
+	width: 10px;
+	height: 10px;
+	border-radius:  5px ;
+}
+.light1{
+	background-color: #ff9900;
+}
+.light2{
+	background-color: #99cc66;
+}
+.light3{
+	background-color: #bfbbdc;
+}
+ */
+
+/*管理頁面*/
+.search_header{
+	border-bottom: 1px #b0bec5 solid;
+	height:100px;
+}
+.content_title{
+	margin-top: 10px;
+	border-left: 3px #2fbdf2 solid;
+	padding-left: 8px;
+}
+
+/*地墊資訊*/
+.carpet_status_icon{
+	 cursor: pointer; 
+}
+
+
+/*課表管理*/
+.th_color{
+	background-color: #e6f7ff;
+}
+.ckbox_group .ckbox{
+	display: inline-block;
+	margin-right: 6px;
+}
+
+	/* 點名modal */
+
+    .table_style {
+    	margin-top: 20px;
+    	font-size: 14px;
+        background-color: #fff;
+        /* border-bottom: 1px solid #eee; */
+    }
+    .table_style tbody tr:hover {
+        cursor: pointer;
+        background-color: #eee;
+    }
+    .table_style tbody tr td {
+        padding: 10px;
+        vertical-align: middle;
+        border-top-color: #eee;
+    }
+    .table_style tbody tr.selected td {
+        background-color: #eee;
+    }
+    .table_style tr td:first-child {
+        width: 38px;
+    }
+    .table_style tr td:nth-child(2) {
+        width: 35px;
+    }
+    .ckbox {
+        position: relative;
+    }
+    .ckbox input[type="checkbox"] {
+        opacity: 0;
+    }
+    .ckbox label {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        margin-left: 6px;
+    }
+    .ckbox label:before {
+        content: '';
+        top: 1px;
+        left: 0;
+        width: 18px;
+        height: 18px;
+        display: block;
+        position: absolute;
+        border-radius: 2px;
+        border: 1px solid #bbb;
+        background-color: #fff;
+    }
+    .ckbox input[type="checkbox"]:checked + label:before {
+        border-color: #2BBCDE;
+        background-color: #2BBCDE;
+    }
+    .ckbox input[type="checkbox"]:checked + label:after {
+        top: 3px;
+        left: 3.5px;
+        content: '\e013';
+        color: #fff;
+        font-size: 11px;
+        font-family: 'Glyphicons Halflings';
+        position: absolute;
+    }
+    
+  
+    /* .table_style .media-body {
+        display: block;
+       
+    } */
+    /* .table_style .media .title {
+        color: #2BBCDE;
+        font-size: 14px;
+        font-weight: bold;
+        line-height: normal;
+        margin: 0;
+    }
+    .table_style .media .title span {
+        font-size: .8em;
+    }
+    
+    .table_style .media .summary {
+        font-size: 14px;
+    } */
+
+/*住民資料 modal*/
+.Data-Content
+{
+  line-height: 25px;
+}
+
+.Data-Label
+{
+  float: left;
+  width: 10%;
+  margin-right: 10px;
+}
+
+.Data-Inputs
+{
+  float: left;
+  width: 25%;
+  height: 20px;
+}
+
+.AlignRight
+{
+  text-align: right;
+}
+
+.user_img{
+    max-width: 150px; 
+    border:1px solid silver; 
+    float: left;
+}

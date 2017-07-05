@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>  
+  <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/bootstrap-datetimepicker.min.css">
+    <script src="https://use.fontawesome.com/f1bc3cf3be.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> 
+    <script src="/scripts/devices/profiles.js"></script>
+  <script src="/scripts/libs/mars-client.js"></script>  
+  <script src="/scripts/reports/tools.js"></script>
+  <script src="/scripts/longcare/js/sockjs.min.js"></script>
+    <script src="/scripts/longcare/js/stomp.min.js"></script>
+    <script src="/scripts/longcare/js/moment.js"></script>
+    <script src="/scripts/longcare/js/bootstrap-datetimepicker.js"></script>
+</head>
+<body id="term_care_show">
+    <div class="row">
+        <div class="col-md-12">
+        	<div class="search_header">
+        		<h3><img src="images/btn_1.png" alt="">卡片管理</h3>
+        		<div>
+					<i class="fa fa-search" style='margin-left: 10px; margin-top: 6px;'>查詢卡片</i>
+	                    <fieldset style="float: left;">
+	                       <input type="text" placeholder="請輸入卡號">
+	                       <input type="submit" value="搜尋">
+	                    </fieldset>
+                       <fieldset style="float: right;">
+                           <i>若為新卡，請建立卡片資料後再使用&nbsp;</i>
+                           <button id="addCardButton" value="新增卡片">新增卡片</button>
+                       </fieldset>
+                </div>
+        	</div>              
+        </div>
+        <div class="col-md-12">
+        	<div class="content_title">卡片資料總表</div>
+        	<div class="table-responsive" style="margin-top: 20px;">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead id="user_data_col">
+                    	<tr><th>卡號</th><th>使用者</th><th>開卡日期</th><th>異動日期</th><th>其它</th><th>其它</th></tr>
+                    </thead>
+                    <tbody id="user_data_row">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div id="editModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">編輯資訊</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label for="cardNo" class="col-sm-2 control-label">卡片編號</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="cardNo"
+                                placeholder="卡片編號" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="user" class="col-sm-2 control-label">使用者</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="user">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="createDate" class="col-sm-2 control-label">開卡日期</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="createDate"
+                                pattern="yyyy/mm/dd" placeholder="YYYY/MM/DD">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="modifyDate" class="col-sm-2 control-label">異動日期</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="modifyDate" 
+                                pattern="yyyy/mm/dd" placeholder="YYYY/MM/DD">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmButton" type="button" class="btn btn-default rounded" >OK</button>
+                <button type="button" class="btn btn-default rounded" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script>
+//---
+var _DeviceSourceData = null;
+var _SensorsData = null;
+var _PrevSelectListItem = null;
+var _UserList = null;
+var _DataSrc_Card = "Cards.IDCard";
+//-----
+
+//-----
+$(function()
+{	
+	InitCards();
+	
+	$("#addCardButton").click(function()
+	{
+	        initUserDataBlock(_User.GetUserList('*'));
+	        
+	        $("#cardNo").val("");
+	        $("#user").val("");
+	        $("#createDate").val("");
+	        $("#modifyDate").val("");
+	        
+		    $("#confirmButton").unbind("click");
+		    $("#confirmButton").click(function()
+    		{
+		    	updateCard();
+		    })
+		    
+		    $("#cardNo").prop("disabled", false);
+		    $("#editModal").modal("show");
+	});	
+});
+//-----
+function findUser(_id)
+{
+	if(_UserList == null) return null;
+	
+	for (var i = 0; i < _UserList.length; i++)
+    	if(_UserList[i].id == _id)
+    		return _UserList[i];
+}
+//-----
+function updateCard()
+{
+    var isExisted = false;    
+    var _cardNo = $("#cardNo").val();
+    
+    var _saveData =
+    {
+   		cardNo: _cardNo,
+       	user: $("#user").val(),
+        createDate: $("#createDate").val().split("-")[0] + "/" + $("#createDate").val().split("-")[1] + "/" + $("#createDate").val().split("-")[2],
+        modifyDate: $("#modifyDate").val().split("-")[0] + "/" + $("#modifyDate").val().split("-")[1] + "/" + $("#modifyDate").val().split("-")[2]
+    };
+    
+    var _user = findUser(_saveData.user);
+    
+    if (_user != null)
+    {
+    	var _pairIDs = JSON.parse(_user.extend01);
+    	_pairIDs.card1 = _cardNo;    
+    	
+    	_user.extend01 = JSON.stringify(_pairIDs);
+    }
+    		
+    if (_user != null && _User.RegistryUser(_user) && _User.updateDataByKey(_DataSrc_Card, _saveData.cardNo, _saveData))
+   		alert("Success!");
+    else
+    	alert("Failure!");
+    
+    $("#editModal").modal("hide");
+    InitCards();
+}
+//-----
+function initUserDataBlock(_data)
+{
+    if (_data != null)
+    {
+    	_UserList = new Array();
+        var _root = JSON.parse(_data);    
+        for (var i = 0; i < _root.results.length; i++)
+        {
+            var _userID = _root.results[i];            
+            if (_userID != 'registry')
+            {
+                var _userData = _User.GetUserInfo(_userID);                
+                var _user = JSON.parse(_userData);                
+                if (_user.group == 'User')
+                	_UserList.push(_user);
+            }
+        }
+        
+        $("#user").empty();
+        
+        for (var i = 0; i < _UserList.length; i++)
+		{
+            var user = _UserList[i];
+            $("#user").append('<option value="' + user.id + '">' + user.name + '</option>');
+        }
+    }
+}
+//---
+function InitCards()
+{           
+	_User.getLastData(_DataSrc_Card, 1000, RefreshCards);
+}
+//---
+function RefreshCards(_data)
+{
+	$("#user_data_row").empty();
+	if(_data == null || _data.length <= 0) return;
+	
+	initUserDataBlock(_User.GetUserList('*'));
+    
+    var cards = JSON.parse(_data).results;
+    for (var i = 0; i < cards.length; i++)
+    {
+        var card = cards[i];        
+        var userInfo = findUser(card.user);        
+        var domHtml = '<tr cardNo="' + card.cardNo + '" user="' + card.user + '" createDate="' + card.createDate + '" modifyDate="' + card.modifyDate + '"><td>' + card.cardNo + '</td><td>' + userInfo.name + '</td><td>' + card.createDate + '</td><td>' + card.modifyDate + '</td><td></td><td></td></tr>';        
+        $("#user_data_row").append($(domHtml));
+    }
+    
+    $("#user_data_row tr").css("cursor", "pointer").click(function()
+    {
+    	$("#cardNo").val($(this).attr("cardNo"));
+    	$("#user").val($(this).attr("user"));
+    	
+    	var createDate = $(this).attr("createDate").split("/")[0] + '-' +  $(this).attr("createDate").split("/")[1] + '-' + $(this).attr("createDate").split("/")[2];
+        $("#createDate").val(createDate);
+        
+        var modifyDate = $(this).attr("modifyDate").split("/")[0] + '-' +  $(this).attr("modifyDate").split("/")[1] + '-' + $(this).attr("modifyDate").split("/")[2];
+        $("#modifyDate").val(modifyDate);
+        
+        $("#confirmButton").unbind("click");
+        $("#confirmButton").click(function()
+     	{
+        	updateCard();
+        });
+        $("#cardNo").prop("disabled", true);
+        $("#editModal").modal("show");
+    });
+}
+</script>

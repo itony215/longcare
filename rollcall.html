@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>  
+  <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/bootstrap-datetimepicker.min.css">
+    <script src="https://use.fontawesome.com/f1bc3cf3be.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> 
+    <script src="/scripts/devices/profiles.js"></script>
+  <script src="/scripts/libs/mars-client.js"></script>  
+  <script src="/scripts/reports/tools.js"></script>
+  <script src="/scripts/longcare/js/sockjs.min.js"></script>
+    <script src="/scripts/longcare/js/stomp.min.js"></script>
+    <script src="/scripts/longcare/js/moment.js"></script>
+    <script src="/scripts/longcare/js/bootstrap-datetimepicker.js"></script>
+</head>
+<body id="term_care_show">
+<!-- <div class="container-fluid" id="term_care_show"> -->
+    <div class="row">
+        <div class="entry_title col-md-12">
+        	<!-- <div class="search_header"> -->
+        		<h3><img src="images/btn_9.png" alt="">點名</h3> 
+        </div>
+    </div> 
+    <div class="row">       
+        <div class="form-inline">
+            <!--課表條件設定-->
+            <div class="col-xs-12">
+                <h1 class="input_box">
+                    <div class="input-group">
+                        <!-- <span class="input-group-addon">對象</span>
+                        <div class="input-group-btn">
+                            <select class="form-control">
+                                <option value="0">機構</option>
+                                <option value="1">個人</option>
+                            </select>
+                        </div> -->
+                        <span class="input-group-addon">地點</span>
+                        <div class="input-group-btn">
+                            <select class="form-control">
+                                <option value="">請選擇</option>
+                                <option value="1">6F綜合娛樂室</option>
+                                <option value="2">4F會議室</option>
+                            </select>
+                        </div>
+                    </div>
+                </h1>
+            </div>
+        </div>
+    </div>    
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-bordered">
+              <thead  class="th_color">
+                <tr>
+                  <th>時間</th>
+                  <th>一</th>
+                  <th>二</th>
+                  <th>三</th>
+                  <th>四</th>
+                  <th>五</th>
+                  <th>六</th>
+                  <th>日</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">08:00~09:00</th>
+                  <td></td>
+                  <td><a href="" data-toggle="modal" data-target="#myModal">休憩(打麻將)</a><div>應到<span>10</span>實到<span>6</span></div></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+    </div>          
+
+</div>
+
+
+<!-- 點名名單 Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">休憩(打麻將)</h4>
+      </div>
+      <div class="modal-body">
+            <div>
+                <h5>選課人數上限:<span>20</span></h5>
+                <h5>點名方式:<span>自動</span></h5>
+                <h5>應到:<span>20</span></h5>
+                <h5>實到:<span>16</span></h5>
+            </div>
+            
+            <table class="table table_style">
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="ckbox">
+                                <input type="checkbox" id="checkbox1">
+                                <label for="checkbox1">陳o秀</label> 
+                                <span class="pull-right">位置</span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="ckbox">
+                                <input type="checkbox" id="checkbox2">
+                                <label for="checkbox2">李o晶</label> 
+                                <span class="pull-right">位置</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary">儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

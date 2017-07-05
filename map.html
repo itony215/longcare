@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html>
+<head>	
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="/scripts/longcare/css/pages/sensor.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/leaflet.css" >
+    <link rel="stylesheet" href="/scripts/reports/report_method2/nv.d3.css" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    
+    <script src="/scripts/devices/profiles.js"></script>
+	<script src="/scripts/libs/mars-client.js"></script>	
+	<script src="/scripts/reports/tools.js"></script>
+	<script src="/scripts/longcare/js/leaflet.js"></script>
+    <script src="/scripts/reports/report_method2/d3.js" charset="utf-8"></script>
+    <script src="/scripts/reports/report_method2/lib/stream_layers.js"></script>
+    <script src="/scripts/reports/report_method2/nv.d3.js"></script> 
+    
+    <style type="text/css">	
+		.table-hover tbody tr:hover td, .table-hover tbody tr:hover th { background-color: #fff3e6;	}
+	</style>
+</head>
+<body >
+<div class="container-fluid">
+	<input id="sel_map_pic" type="file" accept="image/*" style="display: none;"></input>	 
+	<div class="row">	
+	    <div class="col-md-9" style="width:100%;">
+		    <div id="showArea" style="width:80%; display: inline-block; padding-right: 10px;">	  
+		    	<h5 style="height: 36px;">
+					顯示地圖
+			        <select id="cb_map_list" style="width: 180px;"></select>
+			        &nbsp;&nbsp;&nbsp;&nbsp;
+			    	顯示類型
+			        <select id="cb_sensor_filters" style="width: 150px;"></select>
+		    		<div style="float: right;">
+		    			<button id="btn_AddMap" class="mybtn btn_create_sensor" type="button">新增地圖</button>
+		    			<button id="btn_EditMap" class="mybtn btn_create_sensor" type="button">編輯地圖</button>
+		    			<button id="btn_DelMap" class="mybtn btn_create_sensor" type="button">刪除地圖</button>
+		    		</div>
+			    </h5>	      	
+			    <div id="map" style="height:80%;"></div><p>
+			    <div id="events_list" style="overflow:auto; height:15%; border: 1px solid gray;"></div>
+		    </div>
+			<div id="table_block" style="display: inline-block; float: right; width:20%; padding-top: 56px;">	   
+			    <table id="table" class="table table-striped table-bordered table-hover">
+			    	<thead style="background-color: #e6f7ff;">
+				    	<tr id="colmns"><td>裝置列表</td></tr>
+			    	</thead>
+			    	<tbody id="table_content" style="overflow: auto;">
+			    	</tbody>
+			    </table>
+			</div>
+	    </div>
+	</div>
+</div>
+<script>
+	var _MapInfo_All = null;
+	var _CurrentMap = null;
+	var _focusMarker = null;
+	
+    var _SensorsData_All = null;
+    var _EventLog = [];        
+    var _tempLatLng = null;    
+    
+    var _PersonMarkerIcon = null;
+  	//---
+    function LoadDevices()
+    {     
+    	var _data=_User.GetUserDataSrcList();        
+        if(_data != null)
+        {                  
+           var _root = JSON.parse(_data); 
+           return _root.results;
+        }
+        
+        return null;
+    }
+  	//---
+  	function InitSensors()
+    {
+  		_SensorsData_All = SensorsFilter(LoadDevices(), null);	  
+  		_User.SubscribeEvents('*', OnSensorEvents);
+    } 	 	
+  	//---
+  	function ReadAllMapInfo()
+    {	  		
+  		var _maplist = document.getElementById('cb_map_list');
+  		
+  		_maplist.innerHTML = '';
+  		_MapInfo_All = JSON.parse(_User.GetMapInfo()).results; 	
+  		  		
+  		for(var i=0;i<_MapInfo_All.length;i++)
+  		{
+  			if(_MapInfo_All[i].markers == null)
+  				_MapInfo_All.markers = [];
+  			
+  			_maplist.options.add(new Option(_MapInfo_All[i].name, i));
+  		}
+  		
+  		return _MapInfo_All;
+    }
+  	//---
+  	function UpdateCurrentMapInfo()
+    {	  		
+  		if(_CurrentMap == null || _CurrentMap.id == null) 
+  			return;
+  		
+  		var _info = { id : '', name : '', background : '', markers : []};	 
+  		var _map_layer = null;
+  			  		
+  		for(var _layer_id in _CurrentMap._layers)
+  		{
+  			var _layer = _CurrentMap._layers[_layer_id];
+  			if(_layer != null)
+  			{
+	  			if(_layer._url != null)
+	  				_map_layer =_layer;
+	  			else
+	  			if(_layer.sensor != null)
+		  			_info.markers.push({ id: GetSensorInfo(_layer.sensor).id, pos: _layer._latlng});
+  			}
+  		}
+  			  		
+  		if(_map_layer != null)
+  		{
+	  		_info.id = _CurrentMap.id;
+	  		_info.name = _CurrentMap.name;
+	  		_info.background = _map_layer._url;
+	  		
+	  		if(_User.UpdateMapInfo(_info) == 'Ok')
+		  		for(var _map_info of _MapInfo_All)
+		  			if(_map_info.id == _info.id)
+		  			{
+		  				_map_info.name = _info.name;
+		  				_map_info.markers = _info.markers;
+		  				break;
+		  			}
+	  		
+	  		RefreshSensosrsList();
+	  		return _info;
+  		}
+  		
+  		return null;
+    }
+  	//---
+  	function ClearCurrentMap()
+    {
+  		if(_CurrentMap != null)
+		{
+			_CurrentMap.closePopup();
+			_CurrentMap.remove();
+			_CurrentMap = null;
+		}
+    }
+  	//---
+  	function RefreshSensosrsList()
+    {	
+  		if(_CurrentMap == null)
+  			return;
+  		
+  		var _content = document.getElementById('table_content');  
+  		
+  		_content.innerHTML = '';
+  		for(var _layer_id in _CurrentMap._layers)
+  		{
+  			var _sensor = _CurrentMap._layers[_layer_id].sensor;
+  			if(_sensor != null) _content.innerHTML += '<td id="'+_layer_id+'" onclick="OnSensorListClick(this);">'+_sensor.name+'</td>'; 		
+  		}  		
+    }
+  	//---
+  	function OnSensorListClick(_item)
+    {	
+  		if(_CurrentMap == null)
+  			return;
+  		
+  		//alert( _CurrentMap._layers[_item.id].sensor.name);
+  		ShowMarkerOutline(_CurrentMap._layers[_item.id], null);
+    }
+  	//---
+  	function ShowMap(_map_info)
+    {	  	  		 
+  		var _showArea = document.getElementById('showArea');  		
+  		var _new_heigth = _showArea.offsetWidth*3/4;
+  		
+  		_new_heigth = _new_heigth > document.documentElement.clientHeight ? document.documentElement.clientHeight : _new_heigth;
+  		
+  		_showArea.style.height = Math.floor(_new_heigth*0.9)+'px';
+  		document.body.style.height = _showArea.style.height;
+  		
+  		var _map_panel=document.getElementById('map');
+  		_map_panel.innerHTML = '';
+  		
+  		ClearCurrentMap();
+  		
+		var _background = new Image;
+		_background.src = _map_info.background;
+				
+		_background.onload = function()
+		{
+			var _bound = [[0,0], [_background.height, _background.width]];		
+		 	var _scale_ratio_x = _background.width/_map_panel.offsetWidth;
+		 	var _scale_ratio_y = _background.height/_map_panel.offsetHeight;
+		 	var _scale_ratio = (_scale_ratio_x > _scale_ratio_y ? _scale_ratio_x : _scale_ratio_y) - 1;
+		 				 				 	
+			_CurrentMap = L.map(_map_panel.id,
+			{
+				crs: L.CRS.Simple,
+				attributionControl: false,
+				boxZoom: false,
+				dragging: true,
+				minZoom: -_scale_ratio,
+				maxZoom: 0,
+				Zoom: -_scale_ratio,
+				zoomSnap: 0.01,
+				zoomDelta: 0.01,
+				wheelPxPerZoomLevel: 100
+			});	
+			
+			_CurrentMap.whenReady(function(_event)
+			{				
+				$(".leaflet-control-container div:gt(3)").remove();				
+				for(var i=0;i<_SensorsData_All.length;i++)	
+				{
+					var _sensor_info = GetSensorInfo(_SensorsData_All[i]);
+					if(_map_info.markers != null)
+						for(var _marker of _map_info.markers)
+							if(_marker.id == _sensor_info.id)
+			  				{
+			  					AddMark(_marker.pos, _SensorsData_All[i].name, _SensorsData_All[i]);	
+			  					break;
+			  				}
+				}
+				
+				RefreshSensosrsList();
+				return false;
+			}, null);
+			
+			_CurrentMap.on("contextmenu", function(_event)
+			{					
+				_tempLatLng = _event.latlng;	
+				
+				_CurrentMap.closePopup();
+				_CurrentMap.openPopup(	'<div class="popup_create_sensor" id="sensor_popup_menu">'+
+										'<select class="sensor_list" id="cb_sensor_list" size="1" style="width: 180px;"></select>'+
+										'<button class="mybtn btn_create_sensor" type="button" onclick="AddMarkByUI(_tempLatLng);">新增裝置</button>'+
+										'</div>', _tempLatLng, { autoClose: true, closeButton: true, minWidth: 300, minHeight: 80 });
+				
+				return false;
+			});
+			
+			_CurrentMap.on("popupopen", function(_popup_event)
+			{										
+				var _combobox = document.getElementById('cb_sensor_list');
+				if(_combobox != null)
+				{
+					_combobox.innerHTML = '';
+					
+					for(var i=0;i<_SensorsData_All.length;i++)	
+			  		{
+						var _isMarked = false;				
+						var _sensor_info = GetSensorInfo(_SensorsData_All[i]);
+													
+						for(var _map_info of _MapInfo_All)
+							for(var _marker of _map_info.markers)
+					  			if(_marker.id == _sensor_info.id || _sensor_info.type[1] == 'falldetect')
+				  				{
+				  					_isMarked = true;
+				  					break;
+				  				}
+						
+			  			if(_isMarked == false)
+			  			{
+							_combobox.options.add(new Option(_SensorsData_All[i].name, i, _combobox.options.length == 0 ? true : false));
+							_combobox.options[_combobox.options.length -1].sensor = _SensorsData_All[i];
+			  			}
+			  		}
+										
+					if(_combobox.options.length == 0)
+						_combobox.options.add(new Option('No avalible sensor', 0, true));						
+				}
+			});
+						
+			L.imageOverlay(_background.src, _bound).addTo(_CurrentMap);
+			
+			_CurrentMap.fitBounds(_bound);			
+			_CurrentMap.id = _map_info.id;			
+			_CurrentMap.name = _map_info.name;
+			
+			OnFilterChange(null);
+		}
+    } 
+  	//---
+  	function AddMarkByUI(_pos)
+    {	  		
+  		var _combobox = document.getElementById('cb_sensor_list');	  		
+  		var _option = _combobox.options[_combobox.selectedIndex];
+  		
+  		if(_option.sensor != null)
+  		{
+	  		AddMark(_pos, _option.text, _option.sensor);
+	  		UpdateCurrentMapInfo();
+  		}
+    }
+  	//---
+  	function AddMark(_pos, _title, _sensor)
+    {	  		
+  		_CurrentMap.closePopup();	  		
+		
+		if(_sensor != null)		
+		{										
+			var _marker = L.marker(_pos,  {title: _title, focus: false, draggable: true}).addTo(_CurrentMap);	
+			
+			if(_sensor != null)
+			{
+				if(_sensor.uuid == 'SmartXLab')
+				{
+					if(_PersonMarkerIcon == null) _PersonMarkerIcon = L.icon({ iconUrl: 'images/marker_person.png', shadowUrl: 'images/marker-shadow.png'});					
+					_marker.setIcon(_PersonMarkerIcon);
+				}
+				else
+				{
+					var _icon = null;
+					var _info = GetSensorInfo(_sensor);
+					switch(_info.desc)
+					{
+						case _SensorDescription_PIR:
+							_icon = 'images/map_marker/pir_b.png';
+						break;
+						case _SensorDescription_DoorTrigger:
+							_icon = 'images/map_marker/door_b.png';
+						break;
+						case _SensorDescription_FireDetector:
+							_icon = 'images/map_marker/fire_b.png';
+						break;
+						case _SensorDescription_SmokeDetector:
+							_icon = 'images/map_marker/smoke_b.png';
+						break;
+						case _SensorDescription_Trigger:
+						case _SensorDescription_Switcher:
+							_icon = 'images/map_marker/switch_b.png';
+						break;
+						case _SensorDescription_WaterDetector:
+							_icon = 'images/map_marker/water_b.png';
+						break;
+						case _SensorDescription_AirQuality:
+							_icon = 'images/map_marker/air_b.png';
+						break;
+						case _SensorDescription_Camera:
+							_icon = 'images/map_marker/cam_b.png';
+						break;
+						case _SensorDescription_TempHumi:
+						case _SensorDescription_TempHumi2:
+							_icon = 'images/map_marker/sth_b.png';
+						break;
+						case _SensorDescription_PHSensor:
+							_icon = 'images/map_marker/ph_b.png'
+							break;
+						default:
+							_icon = 'images/map_marker/unknown_b.png';
+						break;
+					}
+					
+					if(_icon != null) _marker.setIcon(L.icon({ iconUrl: _icon, iconSize: [41, 41] }));
+				}
+				
+				_marker.sensor = _sensor;	
+			}
+					
+			_marker.on("contextmenu", function(_e)
+			{						
+				var _inner_html='';	
+				_inner_html += '<a href="#" onclick="RemoveMarker(_focusMarker); return false;">移除標記</a>';				
+				
+				_focusMarker=_e.target;
+				
+				_CurrentMap.closePopup();
+				_CurrentMap.openPopup('<div class="popup_create_sensor">'+_inner_html+'</div>', _CurrentMap.mouseEventToLatLng(_e.originalEvent));
+				
+				return false;	
+			});
+			
+			_marker.on("click", function(_e)
+			{
+				_focusMarker = _e.target;
+				
+				ShowMarkerOutline(_focusMarker, _CurrentMap.mouseEventToLatLng(_e.originalEvent));
+				return false;	
+			});
+			
+			_marker.on("moveend", function(_e)
+			{										
+				UpdateCurrentMapInfo();					
+				return false;	
+			});
+		}
+    }
+  	//---
+  	function ShowMarkerOutline(_marker, _pos)
+    {	  		
+  		if(_marker != null)
+  		{
+  			if(_pos == null)
+  				_pos = _marker._latlng;
+  			
+  			_CurrentMap.closePopup();
+			_CurrentMap.openPopup(ComposeSensorLayout_Outline(_marker.sensor), _pos, { autoClose: true, closeButton: true, minWidth: 420, minHeight: 80});
+  		}
+    }
+  	//---
+  	function SetMarkerVisible(_marker, _visible)
+    {	  		
+  		if(_marker._icon != null && _marker._icon.style != null)
+  		{
+  			_marker._icon.style.display = _visible ? '' : 'none';
+  			if(_marker._shadow != null && _marker._shadow.style != null)
+  				_marker._shadow.style.display = _marker._icon.style.display;
+  		}
+    }
+  	//---
+  	function RemoveMarker(_marker)
+    {	  		
+  		_marker.remove();	  		
+  		_CurrentMap.closePopup();
+  		_CurrentMap.removeLayer(_marker);
+  		
+  		UpdateCurrentMapInfo();	  		
+    }
+  	//---
+  	function FindMarkerID(_info)
+    {	  		
+  		for(var _layer_id in _CurrentMap._layers)
+  		{
+  			var _sensor = _CurrentMap._layers[_layer_id].sensor;
+  			if(_sensor != null && _sensor.uuid == _info.uuid && _sensor.suid == _info.suid)
+  				return _layer_id;
+  		}
+  		
+  		return null;
+    }
+  	//---
+  	function FindSensorRawData(_info)
+    {	  		
+  		for(var i=0;i<_SensorsData_All.length;i++)
+		{
+			var _sensor = _SensorsData_All[i];
+			if(_sensor.uuid == _info.uuid && _sensor.suid == _info.suid)
+				return _sensor;
+		}
+  		return null;
+    }
+  	//-----  
+   	function OnSensorEvents(_event)
+   	{ 
+   		try
+		{
+			var _event_data = JSON.parse(_event.data);	 				
+			var _events_list = document.getElementById('events_list');	
+			
+			if(_event_data == null)
+				return;
+												
+			if(_event_data.uuid == 'SmartXLab')
+			{
+				var _marker_id = FindMarkerID(_event_data);
+				
+				if(_event_data.values[0].map == _CurrentMap.id)
+				{
+					var _pos = {lat: _event_data.values[0].y, lng: _event_data.values[0].x};
+					
+					if(_marker_id != null)
+						_CurrentMap._layers[_marker_id].setLatLng(_pos);
+					else
+					{
+						var _sensor = FindSensorRawData(_event_data);
+						if(_sensor != null) AddMark(_pos, _sensor.name, _sensor);
+					}
+				}
+				else
+				if(_marker_id != null)
+					RemoveMarker(_CurrentMap._layers[_marker_id]);
+			}
+			else
+			{
+				var _sensor = FindSensorRawData(_event_data);
+				if(_sensor != null)
+					for(var i=0;i<_event_data.values.length;i++)
+					{
+						var _msg = '['+new Date().YMDT()+'] ' + ComposeSensorEventMsg(_sensor, _event_data.values[i].data, true);
+						if(_msg != null && _msg.length > 0)
+						{
+							_EventLog.push(_msg);						
+							if(_EventLog.length > 30) _EventLog.splice(0, _EventLog.length - 30);
+						}
+					}
+			}
+			
+			_events_list.innerHTML = '';
+			for(var i=_EventLog.length-1;i>=0;i--)
+				_events_list.innerHTML += _EventLog[i]+'<br>';
+		}
+		catch(_ept){};
+   	}
+   	//-----  
+   	function OnAddMapClick(_event)
+   	{
+   		var _select_file = document.getElementById("sel_map_pic");
+   		
+   		_select_file.onchange = function()
+   		{
+   			if(_select_file.files.length > 0)
+           	{
+				var _freader = new FileReader();
+				
+				_freader.readAsDataURL(_select_file.files[0]);         
+				_freader.onloadend = function(_event)
+				{
+					var _map_info = { id : '', name : '', background : '', markers : []};
+
+					_map_info.id = '' + new Date().GetUTC();
+					_map_info.name = 'New Map';
+					_map_info.background = _event.target.result;
+										  
+					if(_User.UpdateMapInfo(_map_info) == 'Ok')
+					{
+						ReadAllMapInfo();
+						
+						var _map_list = document.getElementById('cb_map_list');
+						_map_list.selectedIndex = _map_list.options.length -1;
+						
+						OnMapChange(null);
+					}
+				}
+           	}
+   		}
+   		
+           _select_file.click();
+   	}
+   	//-----  
+   	function OnEditMapClick(_event)
+   	{   		
+   		if(_CurrentMap == null || _CurrentMap.id == null)
+   			return;
+   		
+   		_CurrentMap.closePopup();
+		_CurrentMap.openPopup(	'<div class="popup_create_sensor">'+
+								'名稱 <input id="input_MapName"></input><br>'+
+								'<br><button id="btn_ModifyMapData" class="mybtn btn_create_sensor" style="width:100%;">修改</button>'+
+								'</div>', _CurrentMap.getCenter());
+		
+		document.getElementById('input_MapName').value = _CurrentMap.name;
+		document.getElementById('btn_ModifyMapData').onclick = function()
+		{
+			var _text = document.getElementById('input_MapName').value;
+			if(_text.length > 0)
+			{
+				var _map_list = document.getElementById('cb_map_list');
+				
+				_CurrentMap.name = _text;
+				_map_list.options[_map_list.selectedIndex].text = _CurrentMap.name;
+				_MapInfo_All[_map_list.selectedIndex].name = _CurrentMap.name;
+				
+				UpdateCurrentMapInfo();
+				_CurrentMap.closePopup();
+			}
+		}
+   	}
+   	//-----  
+   	function OnDelMapClick(_event)
+   	{
+   		if(_CurrentMap == null || _CurrentMap.id == null)
+   			return;
+   		
+   	 	if(window.confirm("All the map data will be removed. \nDo you really want to kill the map?") == false)
+   	 		return;
+   		
+   		var _map_info = { id : _CurrentMap.id};			
+		var _result = _User.DelMapInfo(_map_info);
+		
+		if(_result == 'Ok')
+			RefreshMapData();
+   	}
+   	//-----  
+   	function OnMapChange(_event)
+   	{
+   		var _target = document.getElementById('cb_map_list');
+   		if(_event != null)
+   			_target = _event.target;
+   		
+   		if(_target.selectedIndex < 0) return;
+   			
+   		UpdateCurrentMapInfo();	
+   		ShowMap(_MapInfo_All[_target.selectedIndex]);    
+   	}
+   	//-----  
+   	function OnFilterChange(_event)
+   	{
+   		if(_CurrentMap != null)
+   			_CurrentMap.closePopup();
+   		
+   		var _target = document.getElementById('cb_sensor_filters');
+   		if(_event != null)
+   			_target = _event.target;
+   		
+   		if(_target.selectedIndex < 0) return;
+   		
+   		var _option = _target.options[_target.selectedIndex];    		
+   		for(var _layer_id in _CurrentMap._layers)
+   		{
+   			var _sensor = _CurrentMap._layers[_layer_id].sensor;
+   			if(_sensor != null)
+   				SetMarkerVisible(_CurrentMap._layers[_layer_id], SensorTypeMatching(_sensor, _option.innerHTML));
+   		}
+   	}
+   	//-----  
+   	function RefreshMapData()
+   	{
+   		ClearCurrentMap();
+   		
+   		ReadAllMapInfo();
+   		OnMapChange(null);
+   	}
+  	//---		
+	window.onload = function()
+	{
+		document.getElementById('cb_map_list').onchange = OnMapChange;
+		document.getElementById('btn_AddMap').onclick = OnAddMapClick;
+		document.getElementById('btn_EditMap').onclick = OnEditMapClick;
+		document.getElementById('btn_DelMap').onclick = OnDelMapClick;
+		
+		var _combobox = document.getElementById('cb_sensor_filters');
+		
+		_combobox.innerHTML = '';
+		_combobox.onchange = OnFilterChange;
+		for(var i=0;i<SensorDescriptionList.length;i++)
+		{
+			var _option = document.createElement("option");
+			_option.text = SensorDescriptionList[i];
+			_combobox.add(_option);
+		}
+		
+		LoadDevices();
+		InitSensors();			
+		RefreshMapData();
+	}
+</script>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+<head>  
+  <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/bootstrap-datetimepicker.min.css">
+    <script src="https://use.fontawesome.com/f1bc3cf3be.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> 
+    <script src="/scripts/devices/profiles.js"></script>
+  <script src="/scripts/libs/mars-client.js"></script>  
+  <script src="/scripts/reports/tools.js"></script>
+  <script src="/scripts/longcare/js/sockjs.min.js"></script>
+    <script src="/scripts/longcare/js/stomp.min.js"></script>
+    <script src="/scripts/longcare/js/moment.js"></script>
+    <script src="/scripts/longcare/js/bootstrap-datetimepicker.js"></script>
+</head>
+<body id="term_care_show">
+
+    <div class="row">
+        <div class="col-md-12">
+        	<div class="search_header">
+        		<h3><img src="images/btn_5.png" alt="">床位管理</h3>
+        		<div>
+	                 <form action="">
+	                 	<fieldset style="float: left;">
+	                     	<select name="place_select">
+	                          <option>請選擇區域</option>
+	                          <option>全部</option>
+	                          <option>A區</option>
+	                          <option>B區</option>
+	                          <option>C區</option>
+	               			</select>
+	               			<select name="bed_select">
+	                          <option>請選擇床位編號</option>
+	                          <option>全部</option>
+	                          <option>Bed 01</option>
+	                          <option>Bed 02</option>
+	                          <option>Bed 03</option>
+	               			</select>
+							<input type="submit" value="搜尋">
+						</fieldset>
+	                 </form>
+                </div>
+        	</div>              
+        </div>
+        <div class="col-md-12">
+        	<div class="content_title">床位資料總表</div>
+        	<div class="table-responsive" style="margin-top: 20px;">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead id="user_data_col">
+                    	<tr><th>區域</th><th>床位編號</th><th>姓名</th><th>入住日期</th><th>退房日期</th><th>其它</th><th>其它</th><th>其它</th></tr>
+                    </thead>
+                    <tbody id="user_data_row">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div id="editModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">編輯資訊</h4>
+            </div>
+	        <div class="modal-body">
+				<form class="form-horizontal">
+					<div class="form-group">
+						<label for="bedNo" class="col-sm-2 control-label">編號</label>
+						<div class="col-sm-10">
+							<input type="text" class="form-control" id="bedNo"
+								placeholder="床位編號" disabled>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="area" class="col-sm-2 control-label">區域</label>
+						<div class="col-sm-10">
+							<select class="form-control" id="area">
+								<option value="A">A</option>
+								<option value="B">B</option>
+								<option value="C">C</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+                        <label for="user" class="col-sm-2 control-label">使用者</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="user">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="arriveDate" class="col-sm-2 control-label">入住日期</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="arriveDate"
+                                pattern="yyyy/mm/dd" placeholder="YYYY/MM/DD">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="leaveDate" class="col-sm-2 control-label">退房日期</label>
+                        <div class="col-sm-10">
+                            <input type="date" class="form-control" id="leaveDate" 
+                                pattern="yyyy/mm/dd" placeholder="YYYY/MM/DD">
+                        </div>
+                    </div>
+                    <input type="hidden" id="uuid">
+                    <input type="hidden" id="suid">
+				</form>
+			</div>
+			<div class="modal-footer">
+                <button type="button" onclick="saveBed()" class="btn btn-default rounded" >OK</button>
+				<button type="button" class="btn btn-default rounded" data-dismiss="modal">關閉</button>
+			</div>
+		</div>
+    </div>
+</div>	
+</body>
+</html>	
+
+<script>
+//---
+var _DeviceSourceData = null;
+var _SensorsData = null;
+
+
+$(function(){	
+	initBeds();
+});
+
+function initBeds() {
+    InitSensors();
+    
+    var _visible_sensors = new Array();
+    var _source_uuid = 'all';
+    var _filter = _SensorDescription_bed;
+    
+    for(var i=0;i<_SensorsData.length;i++)
+    {
+        var _sensor = _SensorsData[i];
+        if(_source_uuid == 'all' || _source_uuid == _sensor.uuid)
+            if(_sensor != null && SensorTypeMatching(_sensor, _filter))
+            {
+                if(_sensor.parent == null && _sensor.suid.length > 0)
+                    _sensor.parent = FindDeviceSource(_sensor.uuid);
+                
+                var parsedSensor = GetSensorInfo(_sensor);
+                
+                if (parsedSensor.desc == _SensorDescription_bed) {
+                    _visible_sensors.push(GetSensorInfo(_sensor));
+                }
+                
+                //var _index =_visible_sensors.length - 1;
+                //_visible_sensors[_index].index = _index;
+            }
+    }
+    
+    $("#user_data_row").empty();
+    
+    for (var i = 0; i < _visible_sensors.length; i++) {
+        var _sensor = _visible_sensors[i];
+        
+        var _area = "未知";
+        var _user = "未知";
+        var _userName = "未知";
+        var _arriveDate = "未知";
+        var _leaveDate = "未知";
+        if (_sensor.ext3 != '' && _sensor.ext3.length > 0) {
+            var ext3 = JSON.parse(_sensor.ext3);
+            
+            _area = ext3.area;
+            _user = ext3.user;
+            _userName = ext3.userName;
+            _arriveDate = ext3.arriveDate;
+            _leaveDate = ext3.leaveDate;
+        }
+        
+        var domHtml = '<tr><td>' + _area + '</td><td>' + _sensor.id + '</td><td user="' + _user + '">' + _userName + '</td><td>' + _arriveDate + '</td><td>' + _leaveDate + '</td><td>other</td><td>other</td><td>other</td></tr>';
+        
+        $("#user_data_row").append($(domHtml));
+    }
+    
+    $("#user_data_row").find("tr").css("cursor", "pointer").click(function() {
+        var _index = 0;
+        
+        initUserDataBlock(_User.GetUserList('*'));
+        
+        $(this).find("td").each(function() {
+            if (_index == 0) $("#area").val($(this).text());
+            if (_index == 1) {
+                $("#bedNo").val($(this).text());
+                $("#uuid").val($(this).text().split(".")[0]);
+                $("#suid").val($(this).text().split(".")[1]);
+            }
+            if (_index == 2) $("#user").val($(this).attr("user"));
+            if (_index == 3) {
+                var dateStr = $(this).text().split("/")[0] + '-' +  $(this).text().split("/")[1] + '-' + $(this).text().split("/")[2];
+                
+                $("#arriveDate").val(dateStr);
+            }
+            if (_index == 4) {
+                var dateStr = $(this).text().split("/")[0] + '-' +  $(this).text().split("/")[1] + '-' + $(this).text().split("/")[2];
+                
+                $("#leaveDate").val(dateStr);
+            }
+            
+            _index++;
+        });
+        $("#editModal").modal("show");
+    });
+}
+
+function saveBed() {
+	
+    var _ext3 = {
+        area: $("#area").val(),
+        user: $("#user").val(),
+        userName: $("#user option:selected").text(),
+        arriveDate: $("#arriveDate").val().split("-")[0] + "/" + $("#arriveDate").val().split("-")[1] + "/" + $("#arriveDate").val().split("-")[2],
+        leaveDate: $("#leaveDate").val().split("-")[0] + "/" + $("#leaveDate").val().split("-")[1] + "/" + $("#leaveDate").val().split("-")[2]
+    };
+	
+	var bed = {
+		uuid: $("#uuid").val(),
+        suid: $("#suid").val(),
+        ext3: JSON.stringify(_ext3)
+	};
+	
+	if (_User.UpdateUserDevice(bed)) {
+		alert("success");
+	} else {
+		alert("failure");
+	}
+	
+	$("#editModal").modal("hide");
+	
+	initBeds();
+}
+
+function getUserObject(_user) {
+    
+    var gender = '未知';
+    
+    if ("" != _user.extend01) {
+        
+        gender = JSON.parse(_user.extend01).gender;
+        
+        if (null == gender) {
+            gender == "Male";
+        } 
+    }    
+    
+    return {
+        id: _user.id,
+        name: _user.name,
+        group: _user.group,
+    };
+}
+
+//-----
+function initUserDataBlock(_data) {
+    if (_data != null)
+    {
+        var _root = JSON.parse(_data);
+        
+        var userList = new Array();
+        
+        for (var i = 0; i < _root.results.length; i++) {
+            var _userEmail = _root.results[i];
+            
+            if (_userEmail != 'registry') {
+                var _userData = _User.GetUserInfo(_userEmail);
+                
+                var _user = JSON.parse(_userData);
+                if (_user.group == 'User') {
+                    
+                    userList.push(getUserObject(_user));
+                }
+            }
+        }
+        
+        $("#user").empty();
+        
+        for (var i = 0; i < userList.length; i++) {
+            var user = userList[i];
+            
+            $("#user").append('<option value="' + user.id + '">' + user.name + '</option>');
+        }
+    }
+}
+
+//---
+function InitSensors()
+{
+    var _all_physical_objects = LoadDevices();
+    
+    _DeviceSourceData = DeviceSourceFilter(_all_physical_objects, null);
+    _SensorsData = SensorsFilter(_all_physical_objects, null);
+} 
+
+//---
+function LoadDevices()
+{       
+    var _data=_User.GetUserDataSrcList();        
+    if(_data != null)
+    {                       
+       var _root = JSON.parse(_data);
+       
+       return _root.results;
+    }
+    
+    return null;
+}
+
+//---
+function FindDeviceSource(_id)
+{           
+    for(var i=0;i<_DeviceSourceData.length;i++)
+        if(_DeviceSourceData[i].uuid == _id)
+            return _DeviceSourceData[i];
+    
+    return null;
+}
+
+</script>

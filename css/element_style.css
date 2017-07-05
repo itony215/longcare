@@ -1,0 +1,74 @@
+body {
+    font-family: '微軟正黑體','Tahoma';
+}
+/*UI element style*/
+.mybtn{
+    color: #fff;
+    border: none;
+    background-color: #2cb5e8;
+    text-align: center;
+
+}
+.mybtn:hover{
+    background-color:#2fbdf2 ;
+}
+/*外框btn style*/
+.outline_btn{
+    border-radius: 5px;
+    height: 50px;
+    line-height: 50px;
+    margin-bottom: 6px ;
+    font-size: 16px;
+    background-color: #fff;
+    border: none;
+    position: relative;
+}
+
+.btn_icon{
+    background-repeat: no-repeat;
+    position: absolute;
+    max-width: 22%;
+    left: 6%;
+    /* top: 5px; */
+}
+
+.outline_btn{
+    border: 1px solid #b0bec5;
+    background-color: #fff;
+    text-align: center;
+}
+.outline_btn:hover{
+    color: #2cb5e8;
+    border: #2cb5e8 1px solid;
+    background-color: #fff;
+}
+/*TAB style*/
+ /* .nav-tabs{
+    margin-top: 30px;
+ } */
+/* .tab  .nav-tabs{
+    border-bottom: 0px solid transparent;
+    margin-bottom:1px;
+}
+.tab .nav-tabs > li{
+    padding:0 20px;
+}
+.tab .nav-tabs > li a {
+    font-size:14px;
+    color:#808080;
+}
+.tab .nav-tabs > li a:hover,
+.tab .nav-tabs > li.active > a{
+    background:#fff;
+    color: #3498db;
+    padding-bottom:5px;
+    border:1px solid transparent;
+    border-bottom:1px solid #3498db;
+}
+.tab .tab-content{
+    color:#5a5c5d;
+    padding: 20px;
+}
+@media only screen and (max-width: 480px){
+    .tab .nav-tabs > li{ width:100%; }
+} */

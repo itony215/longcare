@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head>  
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+    <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/bootstrap-datetimepicker.min.css">
+    <script src="https://use.fontawesome.com/f1bc3cf3be.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> 
+    <script src="/scripts/devices/profiles.js"></script>
+    <script src="/scripts/libs/mars-client.js"></script>    
+    <script src="/scripts/reports/tools.js"></script>
+    <script src="/scripts/longcare/js/sockjs.min.js"></script>
+    <script src="/scripts/longcare/js/stomp.min.js"></script>
+
+</head>
+
+<style>
+    .carpet_block {
+        margin-top:10px; 
+        margin-left: 10px;
+    }
+    .carpet {
+        float:left; 
+        text-align: center; 
+        margin: 5px; 
+        width: 80px; 
+        height: 80px; 
+        border: 1px solid black;
+        position: relative;
+    }
+    
+    .carpet .sub {
+        float: left; 
+        width: 39px; 
+        height: 39px; 
+        border: 1px solid black;
+    }
+    
+    .carpet .index {
+        position: absolute;
+        top: -1.5em;
+        width: 3em;
+        height: 1.5em;
+        background-color: red;
+    }    
+    .non-display {
+        border: 1px solid #E6E6E6;
+        color: #E6E6E6;
+    }
+    
+    .non-display .sub {
+        border: 1px solid #E6E6E6;
+    }
+    
+    .on {
+        background-color: #E6A170;
+    }
+    
+    .off {
+        background-color: white;
+    }
+
+</style>
+<body>
+<!-- <div class="container-fluid">
+    <div class="row"> -->
+        <div class="col-md-12">
+            <!-- Nav tabs -->
+            <ul id="tab_main" class="nav nav-tabs">
+                <li class="active"><a href="#place_A" data-toggle="tab">A區</a></li>
+                <li><a href="#place_B" data-toggle="tab">B區</a></li>
+                <li><a href="#place_C" data-toggle="tab">C區</a></li>
+            </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <!-- panes A -->
+                    <div class="tab-pane active" id="place_A">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-4">
+                                <div class="item_wrap">
+                                    <div class="item_content">
+                                        <span class="carpet_status_icon" data-toggle="modal" data-target="#carpetModal">
+                                            <img alt="icon" src="/scripts/dcim2/images/m_n.png">
+                                        </span> 
+                                        <div class="person_info">
+                                            <div class="item_tool">
+                                                <p>A01
+                                                    <span class="person_detail"><i class="fa fa-user-circle" data-toggle="modal" data-target="#userModal"></i></span>
+                                                </p>
+                                            </div>
+                                            <h2>李快逃</h2>
+                                            <span class="eventCodeStr">床墊-坐</span><br>
+                                            <span class="eventCodeStr">地墊-無人</span>
+                                            <br>
+                                            <span class="eventDate time">2017-04-20 10:30:53</span>
+                                        </div>
+                                    </div>
+                                    <div class="item_row">
+                                        <div class="item_group">                                 
+                                            <span class="data_t">收縮壓</span>
+                                            <span class="blood_systolic item_data" id="blood_systolic">100</span>                                            
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>
+                                        <div class="item_group">
+                                            <span class="data_t">舒張壓</span>
+                                            <span class="blood_diastolic item_data" id="blood_diastolic">60</span> 
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>                                        
+                                    </div>
+                                    <div class="item_row">                                        
+                                        <div class="item_group">
+                                            <span class="data_t">脈搏</span>
+                                            <span class="pulse item_data" id="pulse">100</span> 
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>
+                                        <div class="item_group">                
+                                            <span class="data_t">體溫</span>
+                                            <span class="temp_body item_data" id="temp_body">36.6</span>
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>
+                                    </div>
+                                    <div class="item_row">
+                                        <div class="item_group">
+                                            <a href=""><p class="item_other">其它</p></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-4">
+                                <div class="item_wrap">
+                                    <div class="item_content">
+                                        <span class="carpet_status_icon" data-toggle="modal" data-target="#carpetModal">
+                                            <img alt="icon" src="/scripts/dcim2/images/m_r.png">
+                                        </span>                                      
+                                        <div class="person_info">
+                                            <div class="item_tool">
+                                                <p>A02
+                                                    <span class="person_detail"><i class="fa fa-user-circle" data-toggle="modal" data-target="#userModal"></i></span>
+                                                </p>
+                                            </div>
+                                            <h2>何林日初</h2>
+                                            <span class="eventCodeStr">床墊-坐</span><br>
+                                            <span class="eventCodeStr">地墊-無人</span>
+                                            <br>
+                                            <span class="eventDate time">2014/04/20 10:30:53</span>
+                                        </div>
+                                    </div>
+                                    <div class="item_row">
+                                        <div class="item_group">                                 
+                                            <span class="data_t">收縮壓</span>
+                                            <span class="blood_systolic item_data" id="blood_systolic">100</span>                                            
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>
+                                        <div class="item_group">
+                                            <span class="data_t">舒張壓</span>
+                                            <span class="blood_diastolic item_data" id="blood_diastolic">60</span> 
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>                                        
+                                    </div>
+                                    <div class="item_row">                                        
+                                        <div class="item_group">
+                                            <span class="data_t">脈搏</span>
+                                            <span class="pulse item_data" id="pulse">100</span> 
+                                            <span class="time ">2017-04-20 10:30:53</span>
+                                        </div>
+                                        <div class="item_group">                
+                                            <span class="data_t">體溫</span>
+                                            <span class="temp_body item_data" id="temp_body">36.6</span>
+                                            <span class="time">2017-04-20 10:30:53</span>
+                                        </div>
+                                    </div>
+                                    <div class="item_row">
+                                        <div class="item_group">
+                                            <a href=""><p class="item_other">其它</p></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                <div class="tab-pane" id="place_B">
+                   <div class="row">
+                        <!-- persons -->
+                    </div>
+                </div>
+                <div class="tab-pane" id="place_C">
+                   <div class="row">
+                        <!-- persons -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div id="userModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="false" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">住民資料</h4>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-md-12">
+                          <div style="max-width: 150px; border:1px solid silver; float: left;" onclick="OnSelectPicture()">
+                            <a href="#"><img id="user_pic" src="images/add_user.png" style="width: 100%; height: auto;"></img></a>
+                          </div>  
+                          <div class="Data-Content">
+                            <div class="Data-Label"><div class="AlignRight">
+                                <label>ID</label><br><br>        
+                              <label>名稱</label><br><br>    
+                              <label>性別</label><br><br>        
+                              <label>電子郵件</label><br><br>
+                              <label>生日</label><br><br>
+                              <label>電話1</label><br><br>
+                              <label>電話2</label><br><br>
+                              <label>住址</label><br><br>
+                              <label>備註</label><br><br>    
+                            </div></div>  
+                            <form autocomplete="off">
+                              <div class="Data-Inputs">
+                                <input type="text" class="form-control input-sm" id="tb_usr_id" placeholder="必填"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_name" placeholder="必填"><br>     
+                                <select type="text" class="form-control input-sm" id="tb_usr_sex"><option>男</option><option>女</option></select><br>    
+                                <input type="text" class="form-control input-sm" id="tb_usr_email"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_birthday"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_phone1"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_phone2"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_address" style="width: 245%;"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_note" style="width: 245%;"><br>
+                              </div>
+                            </form>
+                            <div class="Data-Content">
+                              <div class="Data-Label"><div class="AlignRight">
+                              <label>密碼</label><br><br>
+                              <label>資料叢集</label><br><br>
+                              <label>群組類型</label><br><br>
+                              <label>定位號碼</label><br><br>
+                              <label>卡片1</label><br><br>
+                              <label>卡片2</label><br><br>
+                              <label>房間</label><br><br>
+                            </div></div>
+                            <form autocomplete="off">
+                              <div class="Data-Inputs">
+                                <input type="password" class="form-control input-sm" id="tb_usr_password" placeholder="必填"><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_dataset" readonly><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_group" readonly><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_locationid" readonly><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_card1" readonly><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_card2" readonly><br>
+                                <input type="text" class="form-control input-sm" id="tb_usr_room" readonly><br>    
+                                <br><br><br><br>
+                                <div class="AlignRight">
+                                    <button type="button" class="btn btn-danger" onclick="OnRemoveUser()">刪除</button>
+                                    <button type="button" class="btn btn-success" onclick="OnSubmitUserData()">更新</button>        
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                      </div>
+                      
+                    </div>
+                    <div class="row">
+                      <div class="col-md-3 col-md-offset-3">.col-md-3 .col-md-offset-3</div>
+                      <div class="col-md-2 col-md-offset-4">.col-md-2 .col-md-offset-4</div>
+                    </div>
+                </div>
+
+                <form class="form-horizontal">
+                    <div onclick="OnSelectPicture()">
+                      <a href="#"><img id="user_pic" src="images/add_user.png"></img></a>
+                    </div>
+                    <div class="form-group">
+                        <label for="userName" class="col-sm-2 control-label">姓名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="userName"
+                                placeholder="姓名">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender" class="col-sm-2 control-label">性別</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="gender"
+                                placeholder="性別">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address" class="col-sm-2 control-label">地址</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="address"
+                                placeholder="地址">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="col-sm-2 control-label">電子信箱</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="email"
+                                placeholder="電子信箱">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-1" class="col-sm-2 control-label">聯絡電話1</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phone-1"
+                                placeholder="聯絡電話1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-2" class="col-sm-2 control-label">聯絡電話2</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phone-2"
+                                placeholder="聯絡電話2">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default rounded" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Star 地墊Modal -->
+<div id="carpetModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" data-backdrop="false" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel"><img src="images/btn_5.png" alt="">地墊資訊</h4>
+            </div>
+            <div class="container-fluid" id="term_care_show">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="search_header" style="border-bottom: 0px">
+                            <div>
+                                 <form action="">
+                                    <fieldset style="float: left;">
+                                        <select id="carpet_select" name="place_select">
+                                          <option>請選擇區域</option>
+                                          <option selected value="0005">資策會 9樓實驗室</option>
+                                          <option value="0008">朱崙 01</option>
+                                          <option value="0009">朱崙 02</option>
+                                        </select>
+                                    </fieldset>
+                                 </form>
+                            </div>
+                        </div>              
+                    </div>
+                    <div class="col-md-2">
+                        <div style="margin: 10px; padding-left: 10px; border-left: 3px solid #90C3D4">
+                            <div id="area_0005">區域：資策會 9樓實驗室</div>
+                            <div id="area_0005_status">狀態：無人</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="margin: 10px; padding-left: 10px; border-left: 3px solid #90C3D4">
+                            <div id="area_0008">區域：朱崙 01</div>
+                            <div id="area_0008_status">狀態：無人</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div style="margin: 10px; padding-left: 10px; border-left: 3px solid #90C3D4">
+                            <div id="area_0009">區域：朱崙 02</div>
+                            <div id="area_0009_status">狀態：無人</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row carpet_block" id="carpet_block">
+                    <div class="col-md-12" id="carpets">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default rounded" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div><!-- End 地墊Modal -->
+</body>
+</html>
+<script>
+var stompClient = null;
+$(function(){
+    var w = $("#side_slider_content").width();
+    $('#side_slider_content').css('height', ($(window).height()) + 'px' ); 
+    
+    $("#side_tab").mouseover(function(){
+        if ($("#side_slider_menu").css('right') == '-'+w+'px')
+        {
+            $("#side_slider_menu").animate({ right:'0px' }, 600 ,'swing');
+        }
+    });
+    
+    $("#side_slider_content").mouseleave(function(){
+        $("#side_slider_menu").animate( { right:'-'+w+'px' }, 600 ,'swing');    
+    });
+    
+    initCarpets();
+    
+    $("#carpet_select").change(function() {
+    	initCarpets();
+    });
+    
+    initSocket();
+});
+
+function initCarpets() {
+	var area = $("#carpet_select").val();
+	
+	$("#carpets").empty();
+	
+	if (area == "") {
+        return;
+    }
+	
+	$.ajax({
+        url: 'http://124.9.14.51:8080//api/WhizService/carpet/reqLayout/' + area,
+        type: 'GET',
+        dataType: 'json',
+        success: function(data) {
+            var row = data.row;
+            var col = data.col;
+            
+            var carpetIndex = 0;
+            
+            for (var i = 0; i < row; i++) {
+            	
+            	var rowDOM = $("<div class='row' id='row_" + i + "'>");
+            	
+            	for (var j = 0; j < col; j++) {
+            		
+            		var carpetInfo = data.carpets[carpetIndex];
+            		
+            		var colDOM = $("<div class='carpet'></div>");
+            		
+            		if (!carpetInfo.draw) {
+            			colDOM.addClass("non-display");
+            		}
+            		
+            		var s0 = $("<div id='carpet_" + i + "_" + j + "_s0' class='sub off'>S0</div>");
+            		var s1 = $("<div id='carpet_" + i + "_" + j + "_s1' class='sub off'>S1</div>");
+            		var s2 = $("<div id='carpet_" + i + "_" + j + "_s2' class='sub off'>S2</div>");
+            		var s3 = $("<div id='carpet_" + i + "_" + j + "_s3' class='sub off'>S3</div>");
+            		
+            		colDOM.append(s0);
+            		colDOM.append(s3);
+            		colDOM.append(s1);
+            		colDOM.append(s2);
+            		
+            		rowDOM.append(colDOM);
+            		
+            		carpetIndex++;
+            	}
+            	
+            	$("#carpets").append(rowDOM);
+            }
+        }
+    });
+}
+
+function initSocket() {
+	var wsUri = "http://124.9.14.51:8080/whizcarpet-sockJS";
+	
+	var socket = new SockJS(wsUri);        
+    stompClient = Stomp.over(socket);        
+    stompClient.connect({}, function (frame)
+    {
+        stompClient.subscribe('/topic/whizSensor', function(response)
+        {
+            var message = JSON.parse(response.body);
+            
+            if (message.deviceId == $("#carpet_select").val()) {
+            	
+            	var row = message.row;
+            	
+            	var col = message.col;
+            	
+            	if (message.s0) {
+            		$("#carpet_" + row + "_" + col + "_s0").removeClass("off").addClass("on");
+            	} else {
+            		$("#carpet_" + row + "_" + col + "_s0").removeClass("on").addClass("off");
+            	}
+            	
+            	if (message.s1) {
+                    $("#carpet_" + row + "_" + col + "_s1").removeClass("off").addClass("on");
+                } else {
+                    $("#carpet_" + row + "_" + col + "_s1").removeClass("on").addClass("off");
+                }
+            	
+            	if (message.s2) {
+                    $("#carpet_" + row + "_" + col + "_s2").removeClass("off").addClass("on");
+                } else {
+                    $("#carpet_" + row + "_" + col + "_s2").removeClass("on").addClass("off");
+                }
+            	
+            	if (message.s3) {
+                    $("#carpet_" + row + "_" + col + "_s3").removeClass("off").addClass("on");
+                } else {
+                    $("#carpet_" + row + "_" + col + "_s3").removeClass("on").addClass("off");
+                }
+            }
+        });  
+       
+        stompClient.subscribe('/topic/whizStatus', function(response)
+        {
+            var message = JSON.parse(response.body);
+            
+            var status_0 = "移動中";
+            
+            var status_1 = "站立中";
+            
+            var status_2 = "疑似跌倒";
+            
+            var status_3 = "無人";
+            
+            var status_4 = "多人";
+            
+            var statusBlock = $("#area_" + message.deviceId + "_status");
+            statusBlock.css("color", "black");
+            
+            if (message.status == 0) {
+                statusBlock.html("狀態：" + status_0);
+            } else if (message.status == 1) {
+                statusBlock.html("狀態：" + status_1);
+            } else if (message.status == 2) {
+            	statusBlock.css("color", "red");
+                statusBlock.html("狀態：" + status_2);
+            } else if (message.status == 3) {
+                statusBlock.html("狀態：" + status_3);
+            } else if (message.status == 4) {
+                statusBlock.html("狀態：" + status_4);
+            } else {
+                statusBlock.html("狀態：無人");
+            }
+        });
+    });    
+}
+
+//-----
+function OnLoadTermCare()
+    {
+        $("#term_care_show").load("/scripts/dcim2/term_care.html");
+    }
+//-----
+function OnLoadEditCard()
+    {
+        document.clear();
+        $("#term_care_show").load("/scripts/dcim2/edit_card.html");
+    }
+//-----
+function OnLoadEditBed()
+    {
+        $("#term_care_show").load("/scripts/dcim2/edit_bed.html");  
+    }
+//-----
+function OnLoadEditCarpet()
+	{
+		$("#term_care_show").load("/scripts/dcim2/edit_carpet.html");
+	}
+//-----
+function OnLoadEditCourse()
+{
+    $("#term_care_show").load("/scripts/dcim2/edit_course.html");
+}
+//-----
+function OnLoadRollcall()
+{
+    $("#term_care_show").load("/scripts/dcim2/rollcall.html");
+}
+//-----
+function OnLoadEditUser()
+    {
+        $("#term_care_show").load("/scripts/dcim2/edit_user_term_care_list.html");
+    }
+//-----
+function OnLoadBlueTooth()
+    {
+        $("#term_care_show").load("/scripts/dcim2/edit_bluetooth.html");
+    }
+</script>

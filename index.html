@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>智慧銀髮照護</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/navbar.css">
+    <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/main.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/pages/sensor.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/leaflet.css" >
+    <link rel="stylesheet" href="/scripts/reports/report_method2/nv.d3.css" type="text/css">
+    <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+<!-- 	<link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css"> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>    
+    <script src="/scripts/longcare/js/main.js"></script>
+    <script src="/scripts/libs/mars-client.js"></script>   
+</head>
+<style>
+	html,
+	body,
+	#wrapper,
+	#wrapper>.row,
+	#page-wrapper{
+		height: 100%;
+	}
+
+</style>
+<body>
+<!-- <div id="wrapper"> -->
+    <!-- topbar start -->
+    <nav class="navbar" role="navigation">
+        <div class="navbar-inner">
+            <button type="button" class="navbar-toggle pull-left">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="index.html"> <img alt="Logo" src="images/logo.png" class="hidden-xs"/>
+                <span>智慧銀髮照護</span></a>
+            <!-- user dropdown starts -->
+            <div class="btn-group pull-right">
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <i class="fa fa-user" style="font-size:20px"></i>
+                    <span class="hidden-sm hidden-xs">                        
+                       	<label id="label_account">user@gmail.com</label>
+                    </span>
+                    <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu">
+                    <li><a href="javascript:OnLoadUserInfo();"><!-- <i class="fa fa-fw fa-user" style="display:inline; float:left;"></i> -->個人資訊</a></li>
+                    <li class="divider"></li>
+                    <li><a href="javascript:OnLogout();"><!-- <i class="fa fa-sign-out" aria-hidden="true" style="font-size:20px; padding-right: 8px;"></i> -->登出</a></li>
+                </ul>
+            </div>
+            <!-- user dropdown ends -->
+            <!-- sys starts -->
+            <div class="btn-group pull-right">
+                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <i class="fa fa-fw fa-gear" style="font-size:20px"></i>
+                    <span class="hidden-sm hidden-xs">系統功能</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="/scripts/adminmain.html">系統頁面</a></li>
+                </ul>
+            </div>
+            <!-- sys ends -->
+        </div>
+    </nav>
+    <!-- topbar end -->
+    <div id="wrapper" class="ch-container">
+        <div class="row"> 
+            <!-- left menu start -->
+            <div class="col-sm-2  col-lg-2">
+                <div class="sidebar-nav">
+                    <div class="nav-canvas">
+                        <ul class="nav nav-pills nav-stacked main-menu sidemenu">
+                        	<li><a class="sidemenu_a active" onClick="javascript:OnLoadTermCare();"><i class="btn_icon"><img src="images/btn_8.png" alt="home"></i><span>主頁</span></a></li>
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadEditCard();"><i class="btn_icon"><img src="images/btn_1.png" alt=""></i><span>卡片</span></a></li>
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadEditBed();"><i class="btn_icon"><img src="images/btn_5.png" alt=""></i><span>床位</span></a></li>                        	
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadEditCourse();"><i class="btn_icon"><img src="images/btn_7.png" alt=""></i><span>課表</span></a></li>
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadRollcall();"><i class="btn_icon"><img src="images/btn_9.png" alt=""></i><span>點名</span></a></li>
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadEditUser();"><i class="btn_icon"><img src="images/btn_4.png" alt=""></i><span>住民資料維護</span></a></li>
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadBlueTooth();"><i class="btn_icon"><img src="images/btn_3.png" alt=""></i><span>藍牙裝置配對</span></a></li>
+                        	<li><a class="sidemenu_a " onClick="javascript:OnLoadMat();"><i class="btn_icon"><img src="images/btn_2.png" alt=""></i><span>記錄查詢</span></a></li>
+                            <li><a class="sidemenu_a " href="javascript:OnLoadInfoList();"><i class="btn_icon"><img src="images/btn_10.png" alt=""></i><span>綜合列表</span></a></li>  
+                            <li><a class="sidemenu_a " href="javascript:OnLoadMap();"><i class="btn_icon"><img src="images/btn_11.png" alt=""></i><span>即時圖控</span></a></li>
+                            <li><a class="sidemenu_a " href="javascript:OnLoadDevices();"><i class="btn_icon"><img src="images/btn_12.png" alt=""></i><span>裝置管理</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- left menu end -->
+
+            <div id="page-wrapper" class="col-lg-10 col-sm-10">
+
+                <!-- content start -->                        
+                <div id="show" style="height: 100%;overflow: hidden;"></div>                 
+                <!-- content end -->
+            
+            </div><!--/#content.col-md-0-->
+
+        </div><!--/fluid-row-->
+
+       
+        <hr>
+
+        <footer class="row">
+            <p class="col-md-9 col-sm-9 col-xs-12 copyright">&copy; <a href="index.html">智慧銀髮照護</a>2017</p>      
+        </footer>
+
+    </div><!--/.ch-container-->
+    
+<script>	
+	
+	//----- 
+	function OnLoadMap()
+	{		
+		document.body.style.overflow = 'hidden';
+		document.getElementById('show').style.height = '90vh';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow:hidden; min-width:1024px; height: 100%;" data="/scripts/longcare/map.html"></object>';
+		document.body.scrollTop = 0;
+	}
+	//----- 
+	function OnLoadAllSensers()
+	{
+		document.body.style.overflow  ='auto';
+		document.getElementById('show').style.height ='60000px';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow:hidden; min-width:1024px; height: 100%;" data="/scripts/longcare/devices.html"></object>';
+		document.body.scrollTop = 0;
+	}
+	//----- 
+	function OnLoadDevices()
+	{
+		document.body.style.overflow  ='auto';
+		document.getElementById('show').style.height ='1800px';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow:hidden; min-width:1024px; height: 100%;" data="/scripts/longcare/edit_devices.html"></object>';
+		document.body.scrollTop = 0;
+	}
+	
+	//----- 
+	function OnLoadTermCare()
+	{
+		document.body.style.overflow='auto';
+		document.getElementById('show').style.height='100%';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/term_care.html"></object>';
+		document.body.scrollTop = 0;
+	}
+
+	//----- 
+	function OnLoadAnalysis()
+	{
+		document.body.style.overflow='auto';
+		document.getElementById('show').style.height='90vh';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow:hidden; min-width:1024px; height: 100%;" data="/scripts/longcare/analysis.html"></object>';
+		document.body.scrollTop = 0;
+	}
+	//----- 
+	function OnLoadInfoList()
+	{
+		document.body.style.overflow = 'auto';
+		document.getElementById('show').style.height = '6000px';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; min-width:1024px; height: 100%;" data="/scripts/longcare/info_list.html"></object>';
+		document.body.scrollTop = 0;
+	}
+	//----- 
+	function OnLoadUserInfo()
+	{
+		document.body.style.overflow='auto';
+		document.getElementById('show').style.height='90vh';
+		document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_user_basic.html"></object>';
+		document.body.scrollTop = 0;
+	}
+
+	//-----
+	function OnLoadEditCard()
+		{
+			document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_card.html"></object>';
+			document.body.scrollTop = 0;
+		}
+	//-----
+	function OnLoadEditBed()
+		{
+			document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_bed.html"></object>';
+			document.body.scrollTop = 0;
+		}
+	//-----
+	function OnLoadEditCarpet()
+	{
+		document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_carpet.html"></object>';
+			document.body.scrollTop = 0;
+	}
+	//-----
+	function OnLoadEditCourse()
+	{
+		  document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_course.html"></object>';
+			document.body.scrollTop = 0;
+	}
+	//-----
+	function OnLoadRollcall()
+	{
+		document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/rollcall.html"></object>';
+			document.body.scrollTop = 0;
+	}
+	//-----
+	function OnLoadEditUser()
+		{
+			document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_user_term_care_list.html"></object>';
+			document.body.scrollTop = 0;
+		}
+	//-----
+	function OnLoadBlueTooth()
+		{
+			document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/edit_bluetooth.html"></object>';
+			document.body.scrollTop = 0;
+		}
+
+	//-----
+	function OnLoadMat()
+	    {
+	    	document.body.style.overflow='hidden';
+			document.getElementById('show').style.height='100%';
+			document.getElementById('show').innerHTML = '<object type="text/html" style="overflow: auto; width:100%; height: 100%;" data="/scripts/longcare/mat.html"></object>';
+			document.body.scrollTop = 0;
+	    }
+	
+	//----- 
+	function OnCheckLogin()
+	{
+		if(_User.WasLogin() == null)
+		{
+			window.location = '/scripts/longcare/login.html';
+			return false;
+		}
+		
+		return true;
+	}	
+	//----- 
+	function OnLogout()
+	{
+		if(window.confirm("Logout from service. \nDo you really want to logout?"))
+			window.location = '/scripts/longcare/logout.html';
+	}	
+	//----- 
+	window.onload = function()
+	{              			
+		if(OnCheckLogin() == false)
+			return;
+		
+		var _data = _User.GetUserInfo();
+		if( _data != null)
+		{
+			var _info = JSON.parse(_data);			
+			var _labe_Account = document.getElementById('label_account');
+			var _labe_MsgCount = document.getElementById('span_message_count');
+						
+			_labe_Account.innerHTML = 'Hello, '+_info.name.split('@')[0];
+			// _labe_MsgCount.innerHTML = 0;
+			
+			// _labe_MsgCount.style.display = 'none';
+			window.setInterval(OnCheckLogin, 3600*1000);
+			
+			OnLoadTermCare();
+		}
+  }
+ </script>
+</body>
+</html>

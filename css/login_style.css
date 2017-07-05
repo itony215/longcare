@@ -1,0 +1,142 @@
+body, .navbar-brand{
+    font-family: '微軟正黑體','Tahoma';
+    background-image: url("../images/paper.png");
+}
+
+.login_header{
+  color: #fff;
+	margin: 0;
+	padding: 25px 20px;
+	text-align: center;
+	background-color: #7fb1cd;
+  border: none;
+  box-shadow: 0 0 4px #9d9d9d;
+	text-transform: uppercase;
+	font-weight: 500;
+	font-size:30px;
+}
+
+.login_header img{
+  max-width:100px ;
+}
+
+.login_form_bg{
+	max-width: 350px;
+    margin: 100px auto 0;
+    border-radius: 5px;
+}
+
+.login_form_bg legend{
+	font-size: 24px;
+	text-align:center;
+	color:#333;
+	line-height:80px;
+	border-bottom:solid 1px #DDD;
+}
+
+.login_wrap{
+	padding:10px;
+}
+
+input[type=text],input[type=password]
+{
+	height: 50px;
+}
+/*LOGIN btn*/
+.btn_theme{
+	color: #fff;
+    background-color:#7fb1cd;
+    height:50px;
+}
+.btn_theme:hover,
+.btn_theme:focus,
+.btn_theme:active,
+.btn_theme.active{
+  	color: #fff;
+  	background-color: #719eb7;
+}   
+.registry{
+  margin-bottom:12px;
+}
+/*or hr*/
+.login_or {
+    position: relative;
+    font-size: 18px;
+    color: #aaa;
+    margin-top: 10px;
+            margin-bottom: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .span_or {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: -2px;
+    margin-left: -25px;
+    background-image: url("../images/paper.png");
+    width: 50px;
+    text-align: center;
+  }
+  .hr_or {
+    background-color: #cdcdcd;
+    height: 1px;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+  }
+
+.create_new:hover{
+	color:#22537D;
+}
+
+
+
+
+label
+{
+color: #464646;
+text-shadow: 0 1px 0 #fff;
+font-size: 14px;
+font-weight: bold;
+}
+
+center
+{
+font-size:32px;
+}
+.note
+{
+color:red;
+}
+.valid
+{
+color:green;
+}
+.back
+{
+text-decoration: none;
+border: 1px solid rgb(0, 143, 255);
+background-color: rgb(0, 214, 255);
+padding: 3px 20px;
+border-radius: 2px;
+color: black;
+}
+
+input[type=button]
+{
+font-size: 14px;
+background: linear-gradient(#ffbc00 5%, #ffdd7f 100%);
+border: 1px solid #e5a900;
+color: #4E4D4B;
+font-weight: bold;
+cursor: pointer;
+width: 100%;
+border-radius: 5px;
+padding: 10px 0;
+outline:none;
+}
+
+input[type=button]:hover
+{
+background: linear-gradient(#ffdd7f 5%, #ffbc00 100%);
+}

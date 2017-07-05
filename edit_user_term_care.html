@@ -1,0 +1,86 @@
+<head>
+    <meta charset="utf-8"></meta> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"></meta>
+</head>
+
+<style type="text/css">
+.Data-Content
+{
+  line-height: 25px;
+}
+
+.Data-Label
+{
+  float: left;
+  width: 10%;
+  margin-right: 10px;
+}
+
+.Data-Inputs
+{
+  float: left;
+  width: 25%;
+  height: 20px;
+}
+
+.AlignRight
+{
+  text-align: right;
+}
+</style>
+
+<div style="margin-left: 20px; width: 150px; height: inherit; border:1px solid silver; float: left;" onclick="OnSelectPicture()">
+  <a href="#"><img id="user_pic" src="/images/add_user.png" style="width: 100%; height: inherit;"></img></a>
+</div>  
+<div class="Data-Content">
+  <div class="Data-Label"><div class="AlignRight">
+  	<label>ID</label><br><br>        
+    <label>名稱</label><br><br>    
+    <label>性別</label><br><br>        
+    <label>電子郵件</label><br><br>
+    <label>生日</label><br><br>
+    <label>電話1</label><br><br>
+    <label>電話2</label><br><br>
+    <label>住址</label><br><br>
+    <label>備註</label><br><br>    
+  </div></div>  
+  <form autocomplete="off">
+	  <div class="Data-Inputs">
+	  	<input type="text" class="form-control input-sm" id="tb_usr_id" placeholder="必填"><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_name" placeholder="必填"><br>	    
+	    <select type="text" class="form-control input-sm" id="tb_usr_sex"><option>男</option><option>女</option></select><br>    
+	    <input type="text" class="form-control input-sm" id="tb_usr_email"><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_birthday"><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_phone1"><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_phone2"><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_address" style="width: 245%;"><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_note" style="width: 245%;"><br>
+	  </div>
+  </form>
+  <div class="Data-Content">
+    <div class="Data-Label"><div class="AlignRight">
+    <label>密碼</label><br><br>
+    <label>資料叢集</label><br><br>
+    <label>群組類型</label><br><br>
+    <label>定位號碼</label><br><br>
+    <label>卡片1</label><br><br>
+    <label>卡片2</label><br><br>
+    <label>房間</label><br><br>
+  </div></div>
+  <form autocomplete="off">
+	  <div class="Data-Inputs">
+	  	<input type="password" class="form-control input-sm" id="tb_usr_password" placeholder="必填"><br>
+	  	<input type="text" class="form-control input-sm" id="tb_usr_dataset" readonly><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_group" readonly><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_locationid" readonly><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_card1" readonly><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_card2" readonly><br>
+	    <input type="text" class="form-control input-sm" id="tb_usr_room" readonly><br>    
+	    <br><br><br><br>
+	    <div class="AlignRight">
+	    	<button type="button" class="btn btn-danger" onclick="OnRemoveUser()">刪除</button>
+			<button type="button" class="btn btn-success" onclick="OnSubmitUserData()">更新</button>	      
+	    </div>
+	  </div>
+  </form>
+</div>

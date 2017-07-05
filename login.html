@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="utf-8">
+		<title>智慧銀髮照護系統</title>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"></meta>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <!-- js / BS js -->
+	    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+	    <!-- Bootstrap Core CSS -->
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    	<!-- Custom Fonts -->
+    	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    	<!-- Social btn CSS -->
+    	<link rel="stylesheet" href="/scripts/css/bootstrap-social.css">
+    	<!-- Style -->
+	    <link rel="stylesheet" href="/scripts/longcare/css/login_style.css">	    
+	    <script src="/scripts/libs/mars-client.js"></script>
+	</head>
+	
+	<body> 
+		<div id="alert_zone" class="container"></div> 
+	    <div class="cotainer">
+	    <header><h1 class="login_header"> <img alt="Logo" src="images/logo.png">智慧銀髮照護系統</h1></header>
+			      <form class="login_form_bg" name="_loginform" action="/scripts/main.html" id="_loginform" method="post">
+			      	<legend>登入</legend>
+			      	<div class="login_wrap">
+				        <label for="_usr">Account </label><input type="text" name="_usr" id="_usr" placeholder="example@your.email" class="form-control"></input>
+				        <label for="_pwd">Password </label><input type="password" name="_pwd" id="_pwd" placeholder="password" class="form-control" onkeyup="OnKeyup(event)"></input>
+				        <button type="button" class="btn btn_theme" onclick="OnLoginClick()" style="width: 100%; margin-top: 8px;">Login</button>
+
+						<!-- or hr -->
+				        <div class="login_or">
+					       <hr class="hr_or">
+					       <span class="span_or">or</span>
+					    </div>
+
+					    <div class="row">
+					       <!-- <div class="col-xs-6 col-sm-6 col-md-6">
+					         <button type="button" class="btn btn-block btn-social btn-google" onclick="OnLoginByGoogleClick()"><i class="fa fa-google"></i>by Google</button>
+					       </div>
+					       <div class="col-xs-6 col-sm-6 col-md-6">
+					         <button type="button" class="btn btn-block btn-social btn-facebook" onclick="OnLoginByFBClick()"><i class="fa fa-facebook"></i>by Facebook</button>
+					       </div> -->
+			        	   <a class="btn create_new" onclick="GotoRegistryPage()" style="width: 100%; margin-top: 16px;">Create a new account</a>
+					    </div>
+					    
+				    </div>
+			      </form>
+	    </div>
+	    
+	    <script>
+		  	//-----
+		    function AddAlert(_type, _title, _text)
+		    {        
+		        document.getElementById("alert_zone").innerHTML+='<div class="alert alert-'+_type+' fade in">'+
+		                                     '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
+		                                     '<strong>'+_title+'</strong>'+' : '+_text+'</div>';
+		    }  
+	  		//----
+		    function GotoRegistryPage()
+	    	{
+		    	window.location='/scripts/registry.html';   			
+	    	}
+		  	//----
+		    function GotoMainPage()
+	    	{
+		    	window.location='/scripts/longcare/index.html';   			
+	    	}
+		  	//----
+	    	function OnKeyup(_e)
+	    	{
+	    		if(_e == null || _e.which != 13) return;
+	    		OnLoginClick();
+	    	}
+		    //----
+	    	function OnLoginClick()
+	    	{
+		    	if(_User.WasLogin())
+		    	{
+		    		alert('Login already, please logout first!');
+		    		GotoMainPage();
+		    		return;
+		    	}	
+		    	
+	    		var _usr = document.getElementById("_usr").value;
+    	    	var _pwd = document.getElementById("_pwd").value;
+    	    	    	    	
+	    		if(_usr.length > 0 && _pwd.length > 0 && _User.DoLogin(_usr, _pwd))
+	    			GotoMainPage();
+	    		else
+	    		{
+	    			AddAlert("danger", "Login", "The account or password is incorrect");
+	    		}
+	    	}
+	    	//----
+	    	function OnLoginByGoogleClick()
+	    	{
+	    		if(_User.WasLogin())
+		    	{
+		    		alert('Login already, please logout first!');
+		    		GotoMainPage();
+		    		return;
+		    	}	
+	    		
+	    		_User.DoRegistryByGoogle('http://www.mars-cloud.com.tw:8001/scripts/auth/google_oauth_registry.js');
+	    	}
+	    	//----
+	    	function OnLoginByFBClick()
+	    	{
+	    		if(_User.WasLogin())
+		    	{
+		    		alert('Login already, please logout first!');
+		    		GotoMainPage();
+		    		return;
+		    	}	
+	    		
+	    		_User.DoRegistryByFB('http://www.mars-cloud.com.tw:8001/scripts/auth/fb_oauth_registry.js');
+	    	}
+	    	//----
+	    	function OnLoginByIGClick()
+	    	{
+	    		if(_User.WasLogin())
+		    	{
+		    		alert('Login already, please logout first!');
+		    		GotoMainPage();
+		    		return;
+		    	}	
+	    		
+	    		_User.DoRegistryByIG('http://www.mars-cloud.com.tw:8001/scripts/auth/ig_oauth_registry.js');
+	    	}
+	    </script>  
+	</body>
+</html>

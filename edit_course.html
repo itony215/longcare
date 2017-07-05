@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>  
+  <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+  <link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/bootstrap-datetimepicker.min.css">
+    <script src="https://use.fontawesome.com/f1bc3cf3be.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> 
+    <script src="/scripts/devices/profiles.js"></script>
+  <script src="/scripts/libs/mars-client.js"></script>  
+  <script src="/scripts/reports/tools.js"></script>
+  <script src="/scripts/longcare/js/sockjs.min.js"></script>
+    <script src="/scripts/longcare/js/stomp.min.js"></script>
+    <script src="/scripts/longcare/js/moment.js"></script>
+    <script src="/scripts/longcare/js/bootstrap-datetimepicker.js"></script>
+</head>
+<body id="term_care_show">
+<script type="text/javascript">
+            $(function () {
+                $('#datetimepicker1').datetimepicker();
+                $('#datetimepicker2').datetimepicker();
+            });
+</script>
+
+    <div class="row">
+        <div class="entry_title col-md-12">
+        		<h3><img src="images/btn_7.png" alt="">課表管理</h3> 
+        </div>
+    </div>
+        <!-- Nav tabs -->
+        <ul id="tab_main" class="nav nav-tabs">
+            <li class="active"><a href="#place_A" data-toggle="tab">編輯</a></li>
+            <li><a href="#place_B" data-toggle="tab">選課</a></li>
+        </ul>
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <!-- panes A -->
+            <div class="tab-pane active" id="place_A">
+                <div class="row">       
+                    <div class="form-inline">
+                        <!--課表條件設定-->
+                        <div class="col-xs-12">
+                            <h1 class="input_box">
+                                <div class="input-group">
+                                    <!-- <span class="input-group-addon">對象</span>
+                                    <div class="input-group-btn">
+                                        <select class="form-control">
+                                            <option value="0">機構</option>
+                                            <option value="1">個人</option>
+                                        </select>
+                                    </div> -->
+                                    <span class="input-group-addon">地點</span>
+                                    <div class="input-group-btn">
+                                        <select class="form-control">
+                                            <option value="">請選擇</option>
+                                            <option value="1">6F綜合娛樂室</option>
+                                            <option value="2">4F會議室</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </h1>
+                        </div>
+                    </div>
+                </div>    
+                <div class="row">
+                    <div class="col-xs-12">
+                        <table width="100%" class="table table-striped table-bordered">
+                            <thead>
+                                <tr role="row">
+                                    <th>時間</th>
+                                    <th width="15%">星期</th>
+                                    <th width="20%">課程</th>
+                                    <th width="10%">選課人數上限</th>
+                                    <!-- <th>類別</th> -->
+                                    <th>點名方式</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr role="row">
+                                    <td class="vcenter sorting_1">
+                                        <div class="input-group">
+                                            <span class="input-group-addon">自</span>
+                                            <input type='text' class="form-control" id='datetimepicker1' placeholder="08:00"  only-time-picker="true" date-time-picker="" data-date-format="HH:mm" />
+                                        </div>
+                                        <div class="input-group">
+                                            <span class="input-group-addon">至</span>
+                                            <input type="text" class="input form-control" id='datetimepicker2' placeholder="08:30" only-time-picker="true" date-time-picker="" data-date-format="HH:mm">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-group form-inline">
+                                            <div class="col-xs-8 ckbox_group">
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="mon" name="weekSelect">
+                                                    <label for="mon">一</label>
+                                                </div>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="tue" name="weekSelect">
+                                                    <label for="tue">二</label>
+                                                </div>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="wed" name="weekSelect">
+                                                    <label for="wed">三</label>
+                                                </div>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="thu" name="weekSelect">
+                                                    <label for="thu">四</label>
+                                                </div>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="fri" name="weekSelect">
+                                                    <label for="fri">五</label>
+                                                </div>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="sat" name="weekSelect">
+                                                    <label for="sat">六</label>
+                                                </div>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="sun" name="weekSelect">
+                                                    <label for="sun">日</label>
+                                                </div>                                       
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><textarea class="form-control" style="width: 100%; resize: none;" rows="3"></textarea></td>
+                                    <td><div><input type="value" class="form-control"><font>人</font></div></td>
+                                    <!-- <td class="text-center vcenter">
+                                        <select class="form-control" autofocus="true" >
+                                            <option value="">-- 請選擇 --</option>
+                                            <option value="0" label="活動">活動</option>
+                                            <option value="1" label="休憩">休憩</option>
+                                        </select>
+                                    </td> -->
+                                    <td class="text-center vcenter">
+                                        <select class="form-control" autofocus="true" >
+                                            <option value="">-- 請選擇 --</option>
+                                            <option value="0" label="手動點名">手動點名</option>
+                                            <option value="1" label="自動點名">自動點名</option>
+                                        </select>
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-warning" style="width: 145px;"><i class="fa fa-bell-o"></i> 新增課程</button>
+                                        <button class="btn btn-primary"><i class="fa fa-floppy-o"></i> 更新</button>
+                                        <button class="btn btn-warning"><i class="fa fa-undo"></i> 取消</button>
+                                        <button class="btn btn-danger"><i class="fa fa-times"></i> 刪除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>  
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table table-bordered">
+                          <thead  class="th_color">
+                            <tr>
+                              <th>時間</th>
+                              <th>一</th>
+                              <th>二</th>
+                              <th>三</th>
+                              <th>四</th>
+                              <th>五</th>
+                              <th>六</th>
+                              <th>日</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <th scope="row"></th>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                            
+                          </tbody>
+                        </table>
+                    </div>
+                </div>          
+            </div>
+            <!-- panes B -->
+            <div class="tab-pane" id="place_B">
+                <div class="row">
+                    <div class="form-inline">
+                        <!--課表條件設定-->
+                        <div class="col-xs-3 col-md-4">
+                            <h1>
+                                <div class="input-group">
+                                    <span class="input-group-addon">姓名</span>
+                                    <div class="input-group-btn">
+                                        <select class="form-control">
+                                            <option value="">請選擇</option>
+                                            <option>陳o香</option>
+                                            <option>李o新</option>
+                                        </select>
+                                    </div>
+                                    
+                                </div>
+                            </h1>
+                        </div>
+                    </div> 
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <table width="100%" class="table table-striped table-bordered">
+                            <thead>
+                                <tr role="row">
+                                    <th width="15%">星期</th>                                    
+                                    <th width="20%">地點</th>
+                                    <th width="20%">課程</th>
+                                    <th width="20%">時間</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr role="row">
+                                    <td>
+                                        <select class="form-control">
+                                            <option value="">-- 請選擇--</option>
+                                            <option>星期一</option>
+                                            <option>星期二</option>
+                                            <option>星期三</option>
+                                            <option>星期四</option>
+                                            <option>星期五</option>
+                                            <option>星期六</option>
+                                            <option>星期日</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-control">
+                                            <option>全部</option>
+                                            <option>6F綜合娛樂室</option>
+                                            <option>4F會議室</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select class="form-control">
+                                            <option value="">-- 請選擇 --</option>
+                                            <option>休憩(打麻將)</option>
+                                            <option> 活動(基督教關懷服務)</option>
+                                        </select>
+                                    </td>
+                                    <td></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-primary" style="width: 145px;"><i class="fa fa-plus"></i> 加入</button>                                        
+                                        <button class="btn btn-warning"><i class="fa fa-undo"></i> 取消</button>
+                                        <button class="btn btn-danger"><i class="fa fa-times"></i> 刪除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table class="table table-bordered">
+                          <thead  class="th_color">
+                            <tr>
+                              <th>時間</th>
+                              <th>一</th>
+                              <th>二</th>
+                              <th>三</th>
+                              <th>四</th>
+                              <th>五</th>
+                              <th>六</th>
+                              <th>日</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <th scope="row">08:00~09:00</th>
+                              <td></td>
+                              <td><a href="#">休憩(打麻將)</a></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                              <td></td>
+                            </tr>
+                          </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>        
+        </div>
+    </div>  
+</div>
+
+</body>
+</html>

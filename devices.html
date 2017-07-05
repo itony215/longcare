@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/sensor.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="/scripts/libs/mars-client.js"></script>	
+	<script src="/scripts/devices/profiles.js"></script>
+</head>
+<body style="overflow:hidden; width:100%; height: 100%;">	
+<div class="col-md-9"><h5 style="padding-top:20px; height: 36px;">
+	每行顯示數量
+	<select id="cb_col_count" style="display: in-line;width: 80px;">
+		<option>1</option>
+		<option>2</option>
+		<option selected>3</option>
+		<option>4</option>
+	</select>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	來源裝置
+	<select id="cb_device_source" style="display: in-line;width: 200px;">
+		<option>全部</option>
+	</select>
+	&nbsp;&nbsp;&nbsp;&nbsp;
+	顯示類型
+    <select id="cb_sensor_filters" style="display: in-line;width: 150px;">
+    </select>
+</h5></div>
+<br>
+<div id="table" style='display: table; width: 100%; height: 100%;'></div>
+	
+<script>
+	//---
+	var _DeviceSourceData = null;
+	var _SensorsData = null;
+	//---
+  	function InitSensors()
+    {
+  		var _all_physical_objects = LoadDevices();
+  		
+  		_DeviceSourceData = DeviceSourceFilter(_all_physical_objects, null);
+  		_SensorsData = SensorsFilter(_all_physical_objects, null);
+    } 
+  	//---
+  	function FindDeviceSource(_uuid)
+    {	  		
+  		for(var i=0;i<_DeviceSourceData.length;i++)
+  			if(_DeviceSourceData[i].uuid == _uuid)
+  				return _DeviceSourceData[i];
+  		
+  		return null;
+    }
+ 	//---
+  	function ShowSensors()
+    {	  		
+  		var _table = document.getElementById('table');
+  		var _source = document.getElementById('cb_device_source');
+  		var _target = document.getElementById('cb_sensor_filters');
+  		
+  		_table.innerHTML = '';
+  		   		
+   		if(_target.selectedIndex < 0 || _source.selectedIndex < 0)
+   			return;
+   		
+   		var _visible_sensors = []
+   		var _source_uuid = _source.options[_source.selectedIndex].id;    	
+   		var _option = _target.options[_target.selectedIndex];    		
+   		for(var i=0;i<_SensorsData.length;i++)
+   		{
+   			var _sensor = _SensorsData[i];
+   			if(_source_uuid == 'all' || _source_uuid == _sensor.uuid)
+	   			if(_sensor != null && SensorTypeMatching(_sensor, _option.innerHTML))
+	   			{
+	   				_sensor.parent = FindDeviceSource(_sensor.uuid);
+	   				_visible_sensors.push(_sensor);
+	   			}
+   		}
+   		
+  		var _max_col_count = document.getElementById('cb_col_count').selectedIndex + 1;	  		  		
+  		if(_max_col_count < 1) _max_col_count = 1;
+  		
+  		var _row_count = _visible_sensors.length/_max_col_count + (_SensorsData.length%_max_col_count == 0 ? 0 : 1);
+  		var _sensor_index = 0;
+  		var _block_width =  document.documentElement.cleintWidth/_max_col_count;  		
+  		var _block_height =  _block_width*0.85;  		
+  		
+  		for(var y=0;y<_row_count;y++)
+  		{
+  			var _row = document.createElement('div');
+  			
+  			_row.id='table_col_'+y;
+  			_row.style = 'display: table-row;';
+  			
+	  		for(var x=0;x<_max_col_count;x++)
+	  			if(_sensor_index < _visible_sensors.length)
+	  			{
+			  		var _col = document.createElement('div');
+			  		_col.style = 'display: table-cell; padding: 5px;';			  		
+			  		
+			  		var _sensor = document.createElement('div');
+			  		_sensor.id='sensor_'+_sensor_index;
+			  		//_sensor.className='panelwrap';
+			  		_sensor.style = 'max-width: 720px; height: '+_block_height+'px; border: solid 1px #ddd; padding: 10px 10px 0px 10px; overflow: hidden; margin: auto;';
+			  		
+			  		_col.appendChild(_sensor);
+			  		_row.appendChild(_col);
+			  		_sensor_index++;	
+	  			}
+	  		
+	  		_table.appendChild(_row);
+  		}
+  		
+  		for(var i=0;i<_visible_sensors.length;i++)
+  			document.getElementById('sensor_'+i).innerHTML = ComposeSensorLayout_Outline(_visible_sensors[i]);
+  		
+  		window.onresize();
+    } 
+  	//---
+    function LoadDevices()
+    {     	
+    	var _data=_User.GetUserDataSrcList();        
+        if(_data != null)
+        {                   	
+           var _root = JSON.parse(_data); 
+           return _root.results;
+        }
+        
+        return null;
+    }
+  	//-----  
+   	function OnDeviceSourceChange(_event)
+   	{
+   		ShowSensors();
+   	}
+  	//-----  
+   	function OnColCountChange(_event)
+   	{
+   		ShowSensors();
+   	}
+  	//-----  
+   	function OnFilterChange(_event)
+   	{   		
+   		ShowSensors();
+   	}
+  	//-----   
+    window.onresize = function(_event)
+    {
+    	for(var i=0;i<_SensorsData.length;i++)
+  		{
+  			var _sensor = document.getElementById('sensor_'+i);  			
+  			if(_sensor != null && _sensor.children != null && _sensor.children.length > 0)
+  			{
+  				var _container = _sensor.children[0];  
+	  			var _cell_height = Math.floor(_sensor.offsetWidth * 0.6);  		
+	  			if(_cell_height < 360) _cell_height = 360;
+	  			
+	  			_container.style.height = _cell_height + 'px';
+  			}
+  		}
+    }
+  	//---
+	$(document).ready(function()
+	{
+		var _cb_sensor_filters = document.getElementById('cb_sensor_filters');
+		var _cb_device_source = document.getElementById('cb_device_source');
+		var _cb_col_count = document.getElementById('cb_col_count');
+		
+		_cb_sensor_filters.innerHTML = '';
+		for(var i=0;i<SensorDescriptionList.length;i++)
+		{
+			var _option = document.createElement("option");
+			_option.text = SensorDescriptionList[i];
+			_cb_sensor_filters.add(_option);
+		}
+		
+		InitSensors();
+		
+		_cb_device_source.innerHTML = '<option id="all" selected>全部</option>';
+		for(var i=0;i<_DeviceSourceData.length;i++)
+		{
+			var _option = document.createElement("option");
+			_option.text = _DeviceSourceData[i].name;
+			_option.id = _DeviceSourceData[i].uuid;
+			_cb_device_source.add(_option);
+		}
+		
+		ShowSensors();
+		
+		_cb_col_count.onchange = OnColCountChange;
+		_cb_device_source.onchange = OnDeviceSourceChange;
+		_cb_sensor_filters.onchange = OnFilterChange;		
+	});
+</script>
+</body>
+</html>

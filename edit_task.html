@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="utf-8"></meta> 
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"></meta>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"></link>
+    
+    <script src="/scripts/libs/bootstrap-treeview.js"></script>
+    <link href="/scripts/css/bootstrap-treeview.css" rel="stylesheet"></link>
+    
+    <script src="/scripts/libs/mars-client.js"></script>
+    <script src="/scripts/devices/profiles.js"></script>
+    <script src="/scripts/reports/tools.js"></script>
+    <script src="/scripts/usr/data.js"></script>
+    
+    <link href="/scripts/css/bootstrap-toggle.min.css" rel="stylesheet">
+    <script src="/scripts/libs/bootstrap-toggle.min.js"></script>
+</head>
+
+<style type="text/css">
+.Data-Content
+{
+  line-height: 29px;
+  height: auto;
+}
+
+.Items-List
+{
+  float: left;
+  width: 25%;
+  height: 100%;
+  margin-right: 5px;
+}
+
+.Data-Label
+{
+  float: left;
+  width: 70%;
+  margin-left: 40px;
+}
+
+.AlignRight
+{
+  float: right;
+  text-align: right;
+}
+
+text { font: 9px sans-serif; }
+svg { display: block; }
+
+.nv-label text{ font-size:12px; }
+.nv-title { font-size:28px; }
+
+html, body, #chart, svg
+{
+    margin: 0px;
+    padding: 0px;
+    top: 0%;
+    left: 0%;
+    height: 100%;
+    width: 100%;
+}
+
+.dashed
+{
+    stroke-dasharray: 5,5;
+}            
+
+</style>
+
+<body>  
+    <div class="container-fluid">
+        <div id="alert_zone" class="container"></div>
+
+        <div class="Data-Content">
+        <div class="Items-List" style="min-height: 300px;">
+        	<label>Task List</label>
+        	<div class="AlignRight" style="float: right;">
+        		<button type="button" id="btn_addtask" class="btn btn-success btn-sm" onclick="OnNewTask()">Add Task</button>
+        	</div>
+        	<div id="list_tree" style="min-height: 25px; line-height: 20px;"></div> 
+        	<center class="pagination pagination-sm" style="position: relative; width: 100%; height: 20px; top: -20px;">
+        		<li><a id="btn_prev_page" style="float: left;" href="#" onclick="OnPageModify(this)">-</a></li>
+        		<center style="display: inline-block;">
+        		    <ul id="list_pagination" class="pagination pagination-sm" style="position: relative; top: -20px;">
+        		      <li><a href="#" onclick="OnPageSelected(this.parentElement)">1</a></li>
+        		      <li><a href="#" onclick="OnPageSelected(this.parentElement)">2</a></li>
+        		      <li><a href="#" onclick="OnPageSelected(this.parentElement)">3</a></li>
+        		      <li><a href="#" onclick="OnPageSelected(this.parentElement)">4</a></li>
+        		      <li><a href="#" onclick="OnPageSelected(this.parentElement)">5</a></li>
+        		    </ul>
+        		</center>
+        		<li><a id="btn_next_page" style="float: right;" href="#" onclick="OnPageModify(this)">+</a></li>
+        	</center>  
+        </div>
+        </div> 
+
+        <div class="Data-Content">    
+          <div class="Data-Label">
+        	<label>任務內容</label>
+        	  <div class="list-group" id="cond_info" style="width: 100%; height: 100%; line-height: 20px;">
+        	  	<div class="list-group-item"><form class="form-inline"><label style="margin-right: 6px;">任務編號 :</label><input type="text" class="form-control" id="tb_task_id" style="width: 80%;" readonly></input></form></div>
+        	  	<div class="list-group-item"><form class="form-inline"><label style="margin-right: 6px;">任務暱稱 :</label><input type="text" class="form-control" id="tb_task_name" style="width: 80%;"></input></form></div>
+        	  	<div class="list-group-item"><form class="form-inline"><label style="margin-right: 6px;">任務啟用 :</label><input id="cb_task_active" type="checkbox"></input></form></div>
+        	  </div>    
+            <label>觸發條件</label>
+            <div class="list-group" id="list_cond" style="width: 100%; height: 100%; line-height: 20px;">    
+            	<div class="list-group-item" id="list_group_cond">
+            		<div class="form-inline" id="list_item_cond" style="visibility: hidden;">
+        	    		<select class="form-control" style="width: 35%;" id="sel_input" onchange="OnDataSrcListChange(this, 2)"><select>
+        				<select class="form-control" style="width: 8%;">
+        					<option> = </option>
+        					<option> != </option>
+        					<option> < </option>
+        					<option> > </option>
+        				</select>
+        				<div style="position:absolute; left: 45%; display: inline; width: 20%;">
+        					<select class="form-control" style="position:absolute; left: 0px; width: 100%;"></select>
+        					<input class="form-control" type="number" step="1" style="position:absolute; left: 0px; width: 100%; visibility: hidden;"></input>
+        				</div>
+        				<button type="button" class="btn btn-default btn-sm" style="float: right; margin-top: 2px;" onclick="OnAddCond(this)">
+        					<span class="glyphicon glyphicon-plus-sign"></span> Add
+        		        </button>
+        				<button type="button" class="btn btn-default btn-sm" style="float: right; margin-top: 2px; visibility: hidden;" onclick="OnRemoveItem(this)">
+        	            	<span class="glyphicon glyphicon-minus-sign"></span> Remove
+        		        </button>
+        				<select class="form-control" style="width: 12%; float: right; margin-right: 8px; visibility: hidden;">
+        					<option>並且</option>
+        					<option>或是</option>
+        				</select>				
+        			</div>
+        		</div>
+            </div>    
+            <label>執行動作</label>
+            <div id="list_action" class="list-group" style="width: 100%; height: 100%; line-height: 20px;">    
+            	<div class="list-group-item" id="list_group_action">
+        		    <div class="form-inline" id="list_item_action" style="visibility: hidden;">
+        				<select class="form-control" style="width: 35%;" id="sel_output" onchange="OnDataSrcListChange(this, 1)"><select>
+        				<label> = </label>
+        				<select class="form-control" style="width: 15%;" id="sel_output_value"></select>
+        				<select class="form-control" style="width: 20%;" id="sel_output_delay">
+        					<option>立即執行</option>
+        					<option>延遲10秒</option>
+        					<option>延遲20秒</option>
+        					<option>延遲30秒</option>
+        				</select>
+        				<button type="button" class="btn btn-default btn-sm" style="float: right; margin-top: 2px;" onclick="OnAddAction(this)">
+        					<span class="glyphicon glyphicon-plus-sign"></span> Add
+        			    </button>
+        				<button type="button" class="btn btn-default btn-sm" style="float: right; margin-top: 2px; visibility: hidden;" onclick="OnRemoveItem(this)">
+        			    	<span class="glyphicon glyphicon-minus-sign"></span> Remove
+        			    </button>
+        			</div>
+        		</div>
+            </div>   
+        	<div style="margin-top: 15px;"><div class="AlignRight">
+        		<button type="button" class="btn btn-info" onclick="OnTestTask()" style="margin-right: 15px;">Run Now!</button>
+        	  	<button type="button" class="btn btn-danger" onclick="OnDeleteTask()" style="margin-right: 15px;">Delete</button>
+        	  	<button type="button" class="btn btn-success" onclick="OnUpdateTask()" style="margin-right: 15px;">Update</button>
+        	</div>
+          </div>
+        </div> 
+    </div>
+<script>  
+	//-----
+	var _SensorsData_All = null;
+    //-----
+	var _datasrc_raw_data=null;
+	var _datasrc_tree_data=null;
+	var _task_raw_data=null;
+	var _task_tree_data=null;
+	var _max_tree_nodes_size=8;
+	var _selected_tree_node=null;
+	var _treeview_init_data=
+	{    	
+		color: "#428bca",
+		levels: 1,		
+		expandIcon: 'glyphicon glyphicon-plus-sign',
+		collapseIcon: 'glyphicon glyphicon-minus-sign',
+		showTags: true,
+		onNodeSelected: TreeNodeSelected,
+		data:[]
+	};
+    //----- 
+    function AddAlert(_type, _title, _text)
+    {        
+        document.getElementById("alert_zone").innerHTML+='<div class="alert alert-'+_type+' fade in">'+
+                                     '<a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>'+
+                                     '<strong>'+_title+'</strong>'+' : '+_text+'</div>';
+    } 
+    //----- 
+    function OnRemoveItem(_button)
+    {     	    	
+    	if(_button == null) return;
+    	
+    	var _cond_group = _button.parentElement.parentElement.parentElement;  	
+    	
+    	_cond_group.removeChild(_button.parentElement.parentElement);    	
+    	_cond_group.lastElementChild.lastElementChild.getElementsByTagName("BUTTON")[0].style.visibility='visible';
+    	
+    	if(_cond_group.lastElementChild.lastElementChild.getElementsByTagName("SELECT")[3] != null)
+    		_cond_group.lastElementChild.lastElementChild.getElementsByTagName("SELECT")[3].style.visibility='hidden';
+    }
+    //----- 
+    function OnAddCond(_button)
+    {     	    	
+    	var _cond_group = _button == null ? document.getElementById("list_group_cond").parentElement : _button.parentElement.parentElement.parentElement;   
+    	var _cond_item = _cond_group.lastElementChild.cloneNode(true);    
+    	
+    	_cond_item.index = _cond_group.children.length;
+    	_cond_group.appendChild(_cond_item);
+    	    	 	      
+    	_cond_item.getElementsByTagName("BUTTON")[0].style.visibility='visible';
+    	_cond_item.getElementsByTagName("BUTTON")[1].style.visibility='visible';    	
+    	
+    	if(_button != null)
+    	{
+    		_button.style.visibility='hidden';
+    		_button.parentElement.getElementsByTagName("SELECT")[3].style.visibility='visible';
+    	}
+    	
+    	var _select_ref=_cond_group.children[0].getElementsByTagName("SELECT")[0];
+    	var _select_cur=_cond_item.getElementsByTagName("SELECT")[0];
+    	for(var i=0;i<_select_cur.options.length;i++)
+    	{
+    		_select_cur.options[i].tag = _select_ref.options[i].tag;
+    		_select_cur.options[i].subIndex = _select_ref.options[i].subIndex;
+    	}
+    		
+    }
+    //----- 
+    function OnAddAction(_button)
+    {     	    	
+    	var _act_group = _button == null ? document.getElementById("list_group_action") : _button.parentElement.parentElement.parentElement;   
+    	var _act_item = _act_group.lastElementChild.cloneNode(true);    
+    	
+    	_act_item.index = _act_group.children.length;
+    	_act_group.appendChild(_act_item);
+    	     	    	
+    	_act_item.getElementsByTagName("BUTTON")[0].style.visibility='visible';
+    	_act_item.getElementsByTagName("BUTTON")[1].style.visibility='visible';
+    	
+    	if(_button != null) _button.style.visibility='hidden';
+    	
+    	var _select_ref=_act_group.children[0].getElementsByTagName("SELECT")[0];
+    	var _select_cur=_act_item.getElementsByTagName("SELECT")[0];
+    	for(var i=0;i<_select_cur.options.length;i++)
+    	{
+    		_select_cur.options[i].tag=_select_ref.options[i].tag;
+    		_select_cur.options[i].subIndex = _select_ref.options[i].subIndex;    		
+    		//console.log(_select_cur.options[i].tag);
+    		//console.log(_select_cur.options[i].subIndex);
+    	}
+    }
+    //----- 
+    function ResetTaskPage()
+    {
+    	var _list_cond = document.getElementById("list_cond");
+    	var _list_act = document.getElementById("list_action");
+    	
+    	while(_list_cond.children.length > 1) OnRemoveItem(_list_cond.lastElementChild.getElementsByTagName("BUTTON")[0]);    	
+    	while(_list_act.children.length > 1) OnRemoveItem(_list_act.lastElementChild.getElementsByTagName("BUTTON")[0]);
+    	
+    	document.getElementById("list_item_cond").style.visibility = 'hidden';
+    	document.getElementById("list_item_action").style.visibility = 'hidden';
+    	
+    	document.getElementById("list_item_cond").getElementsByTagName('SELECT')[2].style.visibility = 'hidden';    	
+    	document.getElementById("list_item_cond").getElementsByTagName('INPUT')[0].style.visibility = 'hidden';
+    	
+    	document.getElementById("tb_task_id").value='';
+    	document.getElementById("tb_task_name").value='';
+    	$('#cb_task_active').prop('checked', false).change();
+    }
+    //----- 
+    function OnNewTask()
+    {
+    	var _time = new Date().GetUTC();
+    	var _pages = document.getElementById("list_pagination");
+    	
+    	ResetTaskPage();
+    	OnPageSelected(_pages.children[0]);
+    	
+    	document.getElementById('list_pagination').children = null;    	
+    	document.getElementById("tb_task_id").value = new Date().GetUTC();
+    	document.getElementById("tb_task_name").value='New Task - '+Math.floor(_time/1000);
+    	$('#cb_task_active').prop('checked', true).change();
+    	
+    	document.getElementById("list_item_cond").style.visibility='visible';
+    	document.getElementById("list_item_action").style.visibility='visible';
+    	
+    	var _cond_selects = document.getElementById("list_item_cond").getElementsByTagName('SELECT');
+    	var _act_selects = document.getElementById("list_item_action").getElementsByTagName('SELECT');
+    	
+    	OnDataSrcListChange(_cond_selects[0], 2); 	
+    	OnDataSrcListChange(_act_selects[0], 1); 	
+    }
+  	//----- 
+    function OnTestTask()
+    {
+    	var _task=
+		{
+    		id: document.getElementById("tb_task_id").value
+		};
+    	
+    	_User.RunTask(_task)
+    }
+    //----- 
+    function OnDeleteTask()
+    {
+    	var _task=
+		{
+    		id:document.getElementById("tb_task_id").value
+		};
+    	
+    	if(_User.RemoveTask(_task))
+    	{
+    		LoadTaskData();
+    		AddAlert('success', 'Remove task', 'success');
+    	}
+    	else
+    		AddAlert('danger', 'Remove task', 'fail');
+    }
+    //----- 
+    function OnUpdateTask()
+    {
+    	var _task=
+		{
+    		id:document.getElementById("tb_task_id").value,
+			name:document.getElementById("tb_task_name").value,
+			active:$('#cb_task_active').prop('checked'),
+			cond:[],
+			act:[]
+		};
+    	
+    	var _list_cond=document.getElementById("list_cond");
+    	var _list_act=document.getElementById("list_action");
+    	
+    	var _cond_logic="AND";
+    	for(var i=0;i<_list_cond.children.length;i++)
+		{
+    		var _list_item=_list_cond.children[i];
+    		var _select_items=_list_item.getElementsByTagName("SELECT");
+    		var _input_items = _list_item.getElementsByTagName("INPUT");
+    		
+    		var _datasrc_items=_select_items[0].options;
+    		var _op_items=_select_items[1].options;
+    		var _threshold_items=_select_items[2].options;
+    		var _datasrc_item = _datasrc_items[_datasrc_items.selectedIndex];    		
+    		var _info=_datasrc_item.tag;
+    		var _is_value_range = _info.type[4].includes('~');
+    		var _values = _is_value_range ? _info.type[4].replace("[", "").replace("]", "").split("~") : _info.type[4].replace("[", "").replace("]", "").split(",");    	 
+    		var _op=_op_items[_op_items.selectedIndex];
+    		var _threshold_index=_threshold_items.selectedIndex;    	
+    		var _key_name = _info.type[2];
+    		var _value_type = _info.type[3];
+    		var _mask = null;
+    		var _value = null;
+    		var _raw_value = null;
+            		
+    		if(_is_value_range)
+    		{    			
+    			for(var i=0;i<_values.length;i++) _values[i] = parseInt(_values[i]); 
+    			_value = _input_items[0].value;    			
+    			_mask = null;
+    		}
+    		else
+    		{
+    			if(_datasrc_item.subIndex != null)
+        		{
+        			var _sub_values = _info.ext2.split('|');  
+        			var _sub_value = parseInt(_sub_values[_datasrc_item.subIndex]);
+        			
+        			_value_type = 'int';
+        			_values = [0, _sub_value];
+        			_mask = _sub_value;       
+        		}                                  
+    			
+        		if(_value_type == 'int') _value = parseInt(_values[_threshold_index]); else
+    			if(_value_type == 'bool') _value = parseBoolean(_values[_threshold_index]); else
+    			if(_value_type == 'text') _value = _values[_threshold_index];
+    		}    		
+    		
+    		if(_value != null)
+    		{    				
+    			var _sid = _info.id.split('.'); 
+    			
+    			_raw_value = _threshold_items.selectedIndex;    			
+    			_task.cond.push({uuid: _sid[0], suid: _sid[1], subIndex: _datasrc_item.subIndex, logic:_cond_logic, op:_op.text, key_name: _key_name, raw_value: _raw_value, threshold: _value, mask: _mask});
+    			
+    			if(_select_items[3].options.selectedIndex == 0) _cond_logic="AND";
+    			if(_select_items[3].options.selectedIndex == 1) _cond_logic="OR";
+    		}
+		}
+    	
+    	for(var i=0;i<_list_act.children.length;i++)
+		{
+    		var _list_item=_list_act.children[i];
+    		var _select_items=_list_item.getElementsByTagName("SELECT");
+    		
+    		var _datasrc_items=_select_items[0].options;
+    		var _threshold_items=_select_items[1].options;    		
+    		var _datasrc_item = _datasrc_items[_datasrc_items.selectedIndex];    		
+    		var _info=_datasrc_item.tag;
+    		var _values=_info.type[4].replace("[", "").replace("]", "").split(",");    
+    		var _threshold_index=_threshold_items.selectedIndex;
+    		var _key_name=_info.type[2];
+    		var _value_type = _info.type[3];
+    		var _raw_value = _values[_threshold_index];
+    		var _value = null;
+    		var _delay = _select_items[2].selectedIndex*10*1000;
+    		
+    		if(_datasrc_item.subIndex != null)
+    		{
+    			var _sub_values = _info.ext2.split('|');    			
+    			_value_type = 'text';
+    			_values = [JSON.stringify({slot:_datasrc_item.subIndex, '#0':0}).replace('#0', _key_name), JSON.stringify({slot:_datasrc_item.subIndex, '#0':1}).replace('#0', _key_name)];
+    		}
+    		
+    		if(_value_type == 'int') _value = parseInt(_raw_value); else
+			if(_value_type == 'bool') _value = parseBoolean(_raw_value); else
+			if(_value_type == 'text') _value = _values[_threshold_index];
+    		
+    		if(_value != null)
+    		{
+    			var _sid = _info.id.split('.'); 
+    			_task.act.push({uuid: _sid[0], suid: _sid[1], key_name: _key_name, value_type: _value_type, raw_value: _raw_value, value: _value, delay: _delay});
+    		}
+		}
+    	
+    	console.log(_task);
+    	
+    	if(_User.UpdateTask(_task))
+    	{
+    		LoadTaskData();    		
+    		AddAlert('success', 'Update task', 'success');
+    	}
+    	else
+    		AddAlert('danger', 'Update task', 'fail');
+    }
+    //----- 
+    function OnDataSrcListChange(_list, _value_index)
+    {
+    	var _parent = _list.parentElement;    	
+    	if(_parent.style.visibility == 'hidden') return;
+    	
+    	var _o = _list.options[_list.selectedIndex]; 	
+    	if(_o == null || _o.tag == null) return;
+    	
+    	var _info = _o.tag;
+    	var _is_value_range = _info.type[4].includes('~');
+    	var _list_value = _parent.getElementsByTagName("SELECT")[_value_index];
+    	var _select_item = _parent.getElementsByTagName("SELECT")[2];
+    	var _input_item = _parent.getElementsByTagName("INPUT")[0];
+    	    	
+    	function _addValueListItems()
+    	{
+    		_list_value.options.length = 0;
+    		    	
+    		var _values = _info.type[5].replace("[", "").replace("]", "").split(",");    	    	
+        	for(var i=0;i<_values.length;i++) 
+        	{        		        
+        		var _v = document.createElement("option");
+        		_v.text = _values[i];
+        		_v.value = _values[i];
+        		_list_value.options.add(_v);
+        	}		
+    	}
+    	
+    	if(_info != null)
+	    	switch(_value_index)
+	    	{
+	    		case 1:
+	    			if(_info.type[0] == 'out' || _info.type[0] == 'both') _addValueListItems();
+	    		break;
+	    		case 2:
+	    			if(_info.type[0] == 'in' || _info.type[0] == 'both')
+	    			{
+	    				_select_item.style.visibility = _is_value_range ? 'hidden' : 'visible';
+	    	    		_input_item.style.visibility = _is_value_range ? 'visible' : 'hidden';
+	    				_addValueListItems();
+	    			}
+	        	break;
+	    	}
+    }
+    //----- 
+    function ShowTask(_task)
+    {      	
+    	//console.log(_task);
+    	
+    	$('#cb_task_active').prop('checked', _task.active).change();
+    	document.getElementById('tb_task_id').value = _task.id;
+    	document.getElementById('tb_task_name').value = _task.name;    	
+    	
+    	document.getElementById('list_item_cond').style.visibility='visible';
+    	document.getElementById('list_item_action').style.visibility='visible';
+    	
+    	var _list_cond=document.getElementById("list_cond");
+    	var _list_act=document.getElementById("list_action");
+    	
+    	while(_list_cond.children.length > 1) _list_cond.removeChild(_list_cond.children[_list_cond.children.length-1]);
+    	while(_list_act.children.length > 1) _list_act.removeChild(_list_act.children[_list_act.children.length-1]);    	
+    	
+    	_list_cond.children[0].getElementsByTagName("BUTTON")[0].style.visibility = 'visible';
+    	_list_cond.children[0].getElementsByTagName("BUTTON")[1].style.visibility = 'hidden';
+    	_list_act.children[0].getElementsByTagName("BUTTON")[0].style.visibility = 'visible';
+    	_list_act.children[0].getElementsByTagName("BUTTON")[1].style.visibility = 'hidden';
+    	
+    	    	
+    	for(var i=1;i<_task.cond.length;i++) OnAddCond(_list_cond.children[0].getElementsByTagName("BUTTON")[0]); 
+    	for(var i=0;i<_task.cond.length;i++)
+		{
+    		console.log(_task.cond[i]);
+    		
+    		var _list_item = _list_cond.children[i];
+    		var _select_items = _list_item.getElementsByTagName("SELECT");
+    		var _input_items = _list_item.getElementsByTagName("INPUT");
+    		var _selectThreadIndex = null;
+			var _subIndex = _task.cond[i].subIndex;
+			
+    		if(_task.cond[i].value_type == 'text')
+    			if(_task.cond[i].value != null)
+    				_subIndex = JSON.parse(_task.cond[i].value).slot;
+    		    		
+    		_select_items[0].selectedIndex = FindDataSrc(_select_items[0], _task.cond[i].uuid+"."+_task.cond[i].suid, _subIndex);
+    		_select_items[0].onchange(_select_items[0], 2);
+			_select_items[1].value = _task.cond[i].op; 
+			
+			if(_select_items[0].selectedIndex >= 0)
+			{
+				var _info = _select_items[0].options[_select_items[0].selectedIndex].tag;
+				var _threshold = parseInt(_task.cond[i].threshold);
+				var _selectedIndex = _threshold;
+				
+				if(_task.cond[i].raw_value != null && _task.cond[i].raw_value >= 0)  _selectedIndex = _task.cond[i].raw_value;
+							
+				if(_info.type[3] == 'int') { _select_items[2].selectedIndex = _selectedIndex; _input_items[0].value = _threshold; } else
+				if(_info.type[3] == 'bool') _select_items[2].selectedIndex = parseBoolean(_task.cond[i].threshold); else
+				if(_info.type[3] == 'text') _select_items[2].selectedIndex = _selectedIndex;
+			}	
+			
+		}
+    	
+    	for(var i=1;i<_task.act.length;i++) OnAddAction(_list_act.children[0].getElementsByTagName("BUTTON")[0]); 
+    	for(var i=0;i<_task.act.length;i++)
+		{
+    		console.log(_task.act[i]);  
+    		
+    		var _list_item = _list_act.children[i];
+    		var _select_items = _list_item.getElementsByTagName("SELECT");
+    		var _subIndex = null;
+    		
+    		if(_task.act[i].value_type == 'text')
+    			if(_task.act[i].value != null)
+    				_subIndex = JSON.parse(_task.act[i].value).slot;
+			
+    		_select_items[0].selectedIndex = FindDataSrc(_select_items[0], _task.act[i].uuid+"."+_task.act[i].suid, _subIndex);
+    		_select_items[0].onchange(_select_items[0], 1);
+    		_select_items[2].selectedIndex = (_task.act[i].delay/(10*1000));
+    		    		
+    		var _datasrc_item = _select_items[0].options[_select_items[0].selectedIndex];
+			var _info = _datasrc_item.tag;
+			    					
+			if(_task.act[i].value_type == 'int') _select_items[1].selectedIndex = parseInt(_task.act[i].value); else
+			if(_task.act[i].value_type == 'bool') _select_items[1].selectedIndex = parseBoolean(_task.act[i].value); else
+			if(_task.act[i].value_type == 'text') _select_items[1].selectedIndex = _task.act[i].raw_value;
+		}
+    }    
+    //----- 
+    function TreeNodeSelected(_event, _node)
+    {      
+    	_selected_tree_node=_node;
+    	ShowTask(_node.tag);
+    }     
+    //-----
+    function ParseCurrentPageTreeData(_selected_page)
+    { 		
+		if(_task_tree_data != null)
+		{  
+			var _select_page_number=parseInt(_selected_page.children[0].text); 
+			var _start_result_number=(_select_page_number-1)*_max_tree_nodes_size;
+								
+			var _node_index=0;
+			var _tree_data=[];
+			
+			for (var i = 0; _start_result_number+i < _task_tree_data.length && i < _max_tree_nodes_size; i++)
+			{				
+				var _task_data=_task_tree_data[_start_result_number+i];
+				_tree_data.push({text:_task_data.name, uuid:_task_data.id, tag:_task_data, icon:'glyphicon glyphicon-file'});	
+			}
+		}
+				
+		return _tree_data;
+	}
+    //----- 
+    function OnPageModify(_obj)
+    {     	
+		var _pages=document.getElementById("list_pagination").children;  
+		var _max_page_number=Math.ceil((_list_tree_data == null ? 0 : _list_tree_data.length)/_max_tree_nodes_size);
+		var _start_page_number=parseInt(_pages[0].children[0].text); 
+		
+		if(_obj.id == "btn_prev_page")
+			_start_page_number=(_start_page_number > 1 ? _start_page_number-1 : _start_page_number);  
+		else
+		if(_obj.id == "btn_next_page")
+			_start_page_number=(_start_page_number < _max_page_number ? _start_page_number+1 : _start_page_number);
+				  
+		for (var i = 0; i < _pages.length; i++)
+			_pages[i].children[0].text=_start_page_number+i;
+		  
+		var _prev_selected_index=0;	      
+		for (var i = 0; i < _pages.length; i++)
+			if(_pages[i].className=="active")
+				_prev_selected_index=i;		
+		
+		OnPageSelected(_pages[_prev_selected_index]);
+    }
+    //-----
+    function OnPageSelected(_selected_page)
+    { 
+    	if(_selected_page.className=="disabled")
+    		return;
+		
+		if(_task_tree_data != null)
+		{
+			var _tree=$('#list_tree');   	
+			var _pages=document.getElementById("list_pagination").children;  
+			
+			for(var i = 0; i < _pages.length; i++)			
+				_pages[i].className="";			
+			_selected_page.className="active";
+						
+			_treeview_init_data.data=ParseCurrentPageTreeData(_selected_page);
+			_tree.treeview(_treeview_init_data);
+		}
+	}
+    //----- 
+    function RefreshCurrentPage()
+    {      
+    	var _pages=document.getElementById("list_pagination").children;  
+		for(var i = 0; i < _pages.length; i++)			
+			if(_pages[i].classNam == "active")	
+			{
+				OnPageSelected(_pages[i]);
+				break;
+			}
+    }     
+    //---
+    function LoadDevices()
+    {     
+    	var _data=_User.GetUserDataSrcList();        
+        if(_data != null)
+        {                          	
+           var _root = JSON.parse(_data); 
+           return _root.results;
+        }
+        
+        return null;
+    }
+  	//---
+  	function InitSensors()
+    {
+  		_SensorsData_All = SensorsFilter(LoadDevices(), null);	  
+  		  		
+  		var _list_input = document.getElementById("sel_input");
+        var _list_output = document.getElementById("sel_output"); 
+        
+        function _addSrcItems(_info, _subIndex, _subNames)
+        { 	
+   		   	if(_info.type[0] == 'in'  || _info.type[0] == 'both')
+   		   	{
+	   		   	var _o = document.createElement("option");
+	   		   	
+	        	_o.text = (_subIndex != null && _subNames[_subIndex] != "{}") ? _info.title+"."+_subNames[_subIndex] : _info.title;
+	        	_o.tag = _info;
+	        	_o.subIndex = _subIndex;
+	        	_list_input.options.add(_o);   		
+   		   	}   		
+	 		   
+			if(_info.type[0] == 'out' || _info.type[0] == 'both')
+			{
+				var _o = document.createElement("option");
+	   		   	
+	        	_o.text = (_subIndex != null && _subNames[_subIndex] != "{}") ? _info.title+"."+_subNames[_subIndex] : _info.title;
+	        	_o.tag = _info;
+	        	_o.subIndex = _subIndex;
+				_list_output.options.add(_o); 		  
+			}
+        }
+        
+  		for(var i=0;i<_SensorsData_All.length;i++)
+  		{
+  			var _sensor = _SensorsData_All[i];  			
+  			if(_sensor.suid != null && _sensor.suid.length > 0)
+  			{
+  				var _info = GetSensorInfo(_sensor);
+  				
+  				console.log(JSON.stringify(_info));
+  				
+  				if(_info.type.length >= 6)
+		  	   		if(_info.ext1 != null && _info.ext1.length > 0)
+	        		{
+	        			var _subNames = _info.ext1.split('|');
+	        			for(var j=0;j<_subNames.length;j++) _addSrcItems(_info, j, _subNames);
+	        		}
+		  	   		else
+		  	   			_addSrcItems(_info, null, null);
+  			}
+  		}
+  		
+  		OnDataSrcListChange(_list_output, 1);
+  		OnDataSrcListChange(_list_input, 2);        
+    } 	
+    //----- 
+    function FindDataSrc(_list_item, _id, _subIndex)
+    {      	
+    	for(var i=0;i<_list_item.length;i++)
+    	{
+    		var _option=_list_item.options[i];    		
+    		if(_option.tag.id == _id)
+    		{
+    			if(_option.subIndex == null || _subIndex == null)
+    				return i;
+    			     			
+    			if(_option.subIndex == _subIndex)
+    				return i;
+    		}
+    	}
+    	
+    	return -1;
+    }
+    //----- 
+    function LoadTaskData()
+    {  
+    	var _data = _User.GetTask();        
+    	
+        if(_data != null)
+        {           
+        	var _root = JSON.parse(_data); 
+        	
+        	_task_tree_data=[];        	
+        	for (var i = 0; i < _root.results.length;i++)
+        		_task_tree_data.push(JSON.parse(_root.results[i]));  
+        	
+        	_selected_tree_node=null;
+        	OnPageSelected(document.getElementById('list_pagination').children[0]);
+        	
+        	/*
+        	var _list_output=document.getElementById('sel_output');
+        	for (var i = 0; i < _task_tree_data.length;i++)
+        	{
+        		var _node=[];
+        		_node.uuid='task';
+        		_node.suid=_task_tree_data[i].id;
+        		_node.data_profile='data.task.active.bool.[false,true].[停用,啟用]';
+   
+        		var _o = document.createElement('option');
+        		_o.text='[任務] '+_task_tree_data[i].name;
+        		_o.tag=_node;			   
+				_list_output.options.add(_o);
+        	}
+        	*/
+        }
+        
+        ResetTaskPage();
+    }
+    //----- 
+    function Init()
+    {
+    	var _switcher = $('#cb_task_active');
+		if(_switcher != null) _switcher.bootstrapToggle({on:'開',off:'關'});
+		
+		InitSensors();
+		LoadTaskData();
+    }
+    //----- 
+    window.onload = function()
+    {         
+      Init();     
+  	}
+</script>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>	
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/term_care.css">
+	<link rel="stylesheet" type="text/css" href="/scripts/longcare/css/element_style.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/bootstrap-datetimepicker.min.css">
+    <script src="https://use.fontawesome.com/f1bc3cf3be.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> 
+    <script src="/scripts/devices/profiles.js"></script>
+	<script src="/scripts/libs/mars-client.js"></script>	
+	<script src="/scripts/reports/tools.js"></script>
+	<script src="/scripts/longcare/js/sockjs.min.js"></script>
+    <script src="/scripts/longcare/js/stomp.min.js"></script>
+    <script src="/scripts/longcare/js/moment.js"></script>
+    <script src="/scripts/longcare/js/bootstrap-datetimepicker.js"></script>
+</head>
+<body>
+<!-- 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12"> -->
+			<!-- Nav tabs -->
+			<ul id="tab_main" class="nav nav-tabs">
+				<li class="active"><a href="#place_A" data-toggle="tab">朱崙</a></li>
+		  		<li><a href="#place_B" data-toggle="tab">其它</a></li>
+		  		<li><a href="#place_C" data-toggle="tab">其它</a></li>
+			</ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+            	<!-- <div class="light_margin">
+		          	<div class="light1"></div><span>翻身提醒</span>
+		          	<div class="light3"></div><span>其它提醒</span>
+                </div> -->
+		       	<!-- panes A -->
+		        <div class="tab-pane active" id="place_A">
+                    <div class="row">
+                        <!-- persons -->
+                    </div>
+				</div>
+	            <div class="tab-pane" id="place_B">
+	               <div class="row">
+                        <!-- persons -->
+                    </div>
+	            </div>
+	            <div class="tab-pane" id="place_C">
+	               <div class="row">
+                        <!-- persons -->
+                    </div>
+	            </div>
+	        </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div id="userModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">使用者資訊</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label for="userName" class="col-sm-2 control-label">姓名</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="userName"
+                                placeholder="姓名" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender" class="col-sm-2 control-label">性別</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="gender"
+                                placeholder="性別" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address" class="col-sm-2 control-label">地址</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="address"
+                                placeholder="地址" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="col-sm-2 control-label">電子信箱</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="email"
+                                placeholder="電子信箱" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-1" class="col-sm-2 control-label">聯絡電話1</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phone-1"
+                                placeholder="聯絡電話1" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone-2" class="col-sm-2 control-label">聯絡電話2</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phone-2"
+                                placeholder="聯絡電話2" disabled>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default rounded" data-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+//---
+var _DeviceSourceData = null;
+var _SensorsData = null;
+
+//side slider menu
+$(function(){
+	var w = $("#side_slider_content").width();
+	$('#side_slider_content').css('height', ($(window).height()) + 'px' ); 
+	
+	$("#side_tab").click(function(){
+		if ($("#side_slider_menu").css('right') == '-'+w+'px')
+		{
+			$("#side_slider_menu").animate({ right:'0px' }, 600 ,'swing');
+		}
+	});
+	
+	$("#side_slider_content").mouseleave(function(){
+		$("#side_slider_menu").animate( { right:'-'+w+'px' }, 600 ,'swing');	
+	});
+	
+	initBeds();
+	//SubscribeData();
+});
+
+function initBeds()
+{
+    InitSensors();
+    
+    var _visible_sensors = new Array();
+    var _source_uuid = 'all';
+    var _filter = _SensorDescription_bed;
+    
+    for(var i=0;i<_SensorsData.length;i++)
+    {
+        var _sensor = _SensorsData[i];
+        if(_source_uuid == 'all' || _source_uuid == _sensor.uuid)
+            if(_sensor != null && SensorTypeMatching(_sensor, _filter))
+            {
+                if(_sensor.parent == null && _sensor.suid.length > 0)
+                    _sensor.parent = FindDeviceSource(_sensor.uuid);
+                
+                var parsedSensor = GetSensorInfo(_sensor);
+                
+                if (parsedSensor.desc == _SensorDescription_bed) {
+                    _visible_sensors.push(GetSensorInfo(_sensor));
+                }
+                
+                //var _index =_visible_sensors.length - 1;
+                //_visible_sensors[_index].index = _index;
+            }
+    }
+    
+    $("div[id^=place] div.row").empty();
+    
+    //若有filter要濾掉
+    for (var i = 0; i < _visible_sensors.length; i++) {
+    	// 取得床墊基本資訊
+        var _sensor = _visible_sensors[i];
+    	
+        //取得最後動態
+        //取得最新資料
+        _User.getLastDataParallel(_sensor.id, 1, function(_id, _data)          
+        {
+        	var currentSensor = null;
+        	for (var j = 0; j < _visible_sensors.length; j++)
+        	{
+        		if (_visible_sensors[j].id == _id) {
+        			currentSensor = _visible_sensors[j];
+        			break;
+        		}
+        	}
+        	
+            if (null != _data && currentSensor != null)
+			{
+            	var _area = "未知";
+                var _user = "未知";
+                var _userName = "未知";
+                var _arriveDate = "未知";
+                var _leaveDate = "未知";
+                
+                if (currentSensor.ext3 != null && currentSensor.ext3.length > 0)
+                {
+                    var ext3 = JSON.parse(currentSensor.ext3);
+                    
+                    _area = ext3.area;
+                    _user = ext3.user;
+                    _userName = ext3.userName;
+                    _arriveDate = ext3.arriveDate;
+                    _leaveDate = ext3.leaveDate;
+                }
+                else
+                    return;
+                
+                var gender = "男";                
+                var address = "未知";
+                var email = "未知";
+                var phone1 = "未知";
+                var phone2 = "未知";
+                
+                var eventCode = 0;
+                var eventCodeStr = "未知";
+                var date = "未知";
+                
+                var bedImage = "_s04.png";                
+                var _root = _User.GetUserInfo(_user);
+                var _userData = _root != null ? JSON.parse(_root) : null;             
+                
+                //取得性別資訊
+                if (_userData != null)
+                {
+                    gender = _userData.sex;
+                    address = _userData.address;
+                    email = _userData.email;
+                    phone1 = _userData.phone1;
+                    phone2 = _userData.phone2;
+                }
+                
+                var root = JSON.parse(_data);
+                if(root.results == null || root.results.length <= 0) return;
+                
+                eventCode = root.results[0].data.EventCode;                
+                date = (root.results[0].system_time != null) ? new Date(new Date(root.results[0].system_time).GetUTC() + _User.TimezoneOffset).MDT() : '--/-- --:--:--';
+                
+                //根據性別與EventCode更新狀態
+                switch (eventCode)
+                {
+                    case 0:
+                        bedImage = "_s04.png";
+                        eventCodeStr = "離床";
+                        break;
+                    case 1:
+                        bedImage = "_s01.png";
+                        eventCodeStr = "下床緣";
+                        break;
+                    case 2:
+                        bedImage = "_s02.png";
+                        eventCodeStr = "坐";
+                        break;
+                    case 3:
+                        bedImage = "_s03.png";
+                        eventCodeStr = "躺";
+                        break;
+                    case 4:
+                        bedImage = "_s01.png";
+                        eventCodeStr = "上床緣";
+                        break;
+                    case 5:
+                    case 6:
+                    	bedImage = "warning.png";
+                    	eventCodeStr = "久未翻身";
+                    	break;
+                    default:
+                        bedImage = "_s04.png";
+                        eventCodeStr = "未知";
+                }
+                
+                if (gender == '男') {
+                	bedImage = "/scripts/longcare/images/m" + bedImage;
+                } else {
+                	bedImage = "/scripts/longcare/images/f" + bedImage;
+                }
+                
+                if (eventCode == 6) {
+                	bedImage = "/scripts/longcare/images/" + bedImage;
+                }
+                
+                var _body_temp = _User.readShareDataByKey(_userData.id, "body_temp");
+                var _systolic = _User.readShareDataByKey(_userData.id, "systolic");
+                var _diastolic = _User.readShareDataByKey(_userData.id, "diastolic");
+                var _pulse = _User.readShareDataByKey(_userData.id, "pulse");
+                
+                _body_temp = _body_temp == null ? 0 : JSON.parse(_body_temp)[0];
+                _systolic = _systolic == null ? 0 : JSON.parse(_systolic)[0];
+                _diastolic = _diastolic == null ? 0 : JSON.parse(_diastolic)[0];
+                _pulse = _pulse == null ? 0 : JSON.parse(_pulse)[0];
+                
+                var sensorId = currentSensor.id.split(".")[0] + "_" + currentSensor.id.split(".")[1];
+                var domHtml = '<div class="col-md-3 col-sm-4" id="' + sensorId + '">'+
+                			  '<div class="item_wrap" style="margin-top: 10px; margin-bottom: 10px">'+
+                			  '<div class="item_content"><img alt="icon" src="' + bedImage + '" />'+
+                			  '<div class="person_info"><div class="item_tool"><p>' + currentSensor.id.split(".")[1] +
+                			  '<span class="person_detail"><i onclick="showInfo(this)" userName="' + _userName + '" gender="' + gender + '" address="' + address + '" email="' + email + '" phone1="' + phone1 + '" phone2="' + phone2 + '" class="fa fa-user-circle"></i></span></p></div>'+
+                			  '<h2>' + _userName + '</h2><span class="eventCodeStr">' + eventCodeStr + '</span><br/>'+
+                			  '<span class="eventDate" style="font-size:smaller">' + date + '</span><div><div class="light1"></div></div></div></div>'+
+                			  '<div class="item_foot">'+
+                			  '<div class="item_data"><span class="time">-</span><span class="blood_systolic" id="blood_systolic">'+_systolic+'</span><p>收縮壓</p></div>'+
+                			  '<div class="item_data"><span class="time">-</span><span class="blood_diastolic" id="blood_diastolic">'+_diastolic+'</span><p>舒張壓</p></div>'+
+                			  '<div class="item_data"><span class="time">-</span><span class="pulse" id="pulse">'+_pulse+'</span><p>脈搏</p></div>'+
+                			  '<div class="item_data"><span class="time">-</span><span class="temp_body" id="temp_body">'+Math.round(_body_temp*10)/10+'</span><p>體溫</p></div></div></div></div>';
+                
+                $("#place_" + _area + " div").html($("#place_" + _area + " div").html() + domHtml);
+            }
+        });
+    }
+}
+
+///----
+function showInfo(obj)
+{
+	$("#userName").val($(obj).attr("userName"));
+	
+	var gender = $(obj).attr("gender");
+	
+	if (gender == "Male") {
+		$("#gender").val("男");
+	} else {
+		$("#gender").val("女");
+	}
+	
+    
+    $("#address").val($(obj).attr("address"));
+    $("#email").val($(obj).attr("email"));
+    $("#phone-1").val($(obj).attr("phone1"));
+    $("#phone-2").val($(obj).attr("phone2"));
+    
+    $("#userModal").modal("show");
+}
+
+//-----  
+function OnSensorsData(_payload)
+{           
+    try
+    {
+        var _data = JSON.parse(_payload.data);
+                    
+        if(_data.suid != null && _data.suid.length > 0)
+        {                
+            var sensorId = _data.uuid + "_" + _data.suid;
+            
+            var eventCode = _data.values[0].data.EventCode;
+            //alert(eventCode);
+            
+            var bedImage = "_s04.png";
+            var eventCodeStr = "未知";
+            
+            var date = new Date().MDT();
+            
+            var gender = "Male";
+            
+            //根據性別與EventCode更新狀態
+            switch (eventCode) {
+                case 0:
+                    bedImage = "_s04.png";
+                    eventCodeStr = "離床";
+                    break;
+                case 1:
+                    bedImage = "_s01.png";
+                    eventCodeStr = "下床緣";
+                    break;
+                case 2:
+                    bedImage = "_s02.png";
+                    eventCodeStr = "坐";
+                    break;
+                case 3:
+                    bedImage = "_s03.png";
+                    eventCodeStr = "躺";
+                    break;
+                case 4:
+                    bedImage = "_s01.png";
+                    eventCodeStr = "上床緣";
+                    break;
+                case 5:
+                case 6:
+                default:
+                    bedImage = "_s04.png";
+                    eventCodeStr = "未知";
+            }
+            
+            gender = $("div#" + sensorId).find("i").attr("gender");
+            if (gender == 'Male') {
+                bedImage = "/scripts/longcare/images/m" + bedImage;
+            } else {
+                bedImage = "/scripts/longcare/images/f" + bedImage;
+            }
+            
+            $("div#" + sensorId + " > div.item_wrap > div.item_content > img").attr("src", bedImage);
+            $("div#" + sensorId + " > div.item_wrap > div.item_content > div.person_info > span.eventCodeStr").text(eventCodeStr);
+            $("div#" + sensorId + " > div.item_wrap > div.item_content > div.person_info > span.eventDate").text(date);
+        }
+    }
+    catch(_ept){};
+}
+
+//---
+function SubscribeData()
+{
+    _User.SubscribeData('*', OnSensorsData);
+}
+
+//---
+function InitSensors()
+{
+    var _all_physical_objects = LoadDevices();
+    
+    _DeviceSourceData = DeviceSourceFilter(_all_physical_objects, null);
+    _SensorsData = SensorsFilter(_all_physical_objects, null);
+} 
+
+//---
+function LoadDevices()
+{       
+    var _data=_User.GetUserDataSrcList();        
+    if(_data != null)
+    {                       
+       var _root = JSON.parse(_data);
+       
+       return _root.results;
+    }
+    
+    return null;
+}
+
+//---
+function FindDeviceSource(_id)
+{           
+    for(var i=0;i<_DeviceSourceData.length;i++)
+        if(_DeviceSourceData[i].uuid == _id)
+            return _DeviceSourceData[i];
+    
+    return null;
+}
+
+//-----
+function initUserDataBlock(userList) {
+	
+	for (var i = 0; i < userList.length; i++) {
+		var user = userList[i];
+		
+		$("#user-data-list-block").html($("#user-data-list-block").html() + user.domHtml());
+	}
+}
+
+
+window.onload = function()
+{
+    SubscribeData();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<title>Mars Cloud Login</title>	
+    <link rel="stylesheet" href="/scripts/css/pages/login_style.css"></link>	
+    <script src="/scripts/libs/mars-client.js"></script>
+    
+	</head>
+	<body> 
+    <script>    
+		window.onload = function()
+		{             
+	        var _token=_User.WasLogin();
+	        if( _token != null)
+	        {
+	        	_User.DoLogout(_token);
+	          	document.location="/scripts/longcare/login.html";
+	        }
+		}
+    </script>
+	</body>
+</html>

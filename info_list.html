@@ -1,0 +1,825 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/scripts/css/dialog.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/pages/sensor.css">  
+    <link rel="stylesheet" href="/scripts/longcare/css/element_style.css">  
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="/scripts/libs/mars-client.js"></script>	
+	<script src="/scripts/libs/dialog.js"></script>	
+	<script src="/scripts/devices/profiles.js"></script>
+	<script src="/scripts/devices/tools.js"></script>
+	<script src="/scripts/reports/tools.js"></script>
+	
+	<style type="text/css">	
+		.table-hover tbody tr:hover td, .table-hover tbody tr:hover th { background-color: #fff3e6;	}
+	</style>
+</head>
+<body>
+  <div class="container-fluid">
+
+      <ul id="tab_main" class="nav nav-tabs"></ul>
+      <div class="table-responsive">
+      	<table id="table" class="table table-striped table-bordered table-hover" style="margin-top: 12px;"></table>
+      </div>	
+  </div>
+<script>
+	//-----------------------------------------------------------------------------------------------
+	var _DeviceSourceData = null;
+	var _SensorsData = null;
+	var triggers = null;
+	//-----------------------------------------------------------------------------------------------
+  	function InitTabs()
+    {
+		var _tab_main = document.getElementById('tab_main');
+		
+		_tab_main.onclick = OnFilterChange;
+		_tab_main.innerHTML = '';
+		for(var i=0;i<SensorDescriptionList.length;i++)
+		{
+			var _html = '<li style="display:inline; float: left;"><a data-toggle="tab" href="#info_{0}">{1}</a></li>';
+			if(i == 0) _html = '<li style="display:inline; float: left;" class="active"><a data-toggle="tab" href="#info_{0}">{1}</a></li>';
+			
+			_html = _html.replace('{0}', ''+i);
+			_html = _html.replace('{1}', SensorDescriptionList[i]);
+			
+			_tab_main.innerHTML += _html;
+		}		
+    } 
+	//-----------------------------------------------------------------------------------------------
+  	function InitSensors()
+    {
+  		var _all_physical_objects = LoadDevices();
+  		
+  		_DeviceSourceData = DeviceSourceFilter(_all_physical_objects, null);
+  		_SensorsData = SensorsFilter(_all_physical_objects, null);
+    } 
+  	//-----------------------------------------------------------------------------------------------
+  	function SubscribeData()
+    {
+  		_User.SubscribeData('*', OnSensorsData);
+    } 
+  	//-----------------------------------------------------------------------------------------------
+  	function FindDeviceSource(_id)
+    {	  		
+  		for(var i=0;i<_DeviceSourceData.length;i++)
+  			if(_DeviceSourceData[i].uuid == _id)
+  				return _DeviceSourceData[i];
+  		
+  		return null;
+    }
+  	//-----------------------------------------------------------------------------------------------
+  	function FindSensorRawDataByID(_id)
+    {	  		
+  		for(var i=0;i<_SensorsData.length;i++)
+  			if(_SensorsData[i].uuid+'.'+_SensorsData[i].suid == _id)
+  				return _SensorsData[i];
+  		
+  		return FindDeviceSource(_id);
+    }
+  	//-----------------------------------------------------------------------------------------------
+  	function OnSensorListClick(_event, _item)
+  	{  	
+  		if(_item != null)
+  			ShowSensorOutline(FindSensorRawDataByID(_item.id), window.parent.document.body.scrollTop + 150);
+  	}
+  	//-----------------------------------------------------------------------------------------------
+  	function ShowSensorOutline(_sensor, _top)
+    {	  		  		
+  		if(_sensor != null)
+  		{  						
+  			if(_top != null) _top = (_top != null &&_top > 150) ? _top : 150;  	
+  			
+  			var _width = 480;
+  			var _height = 360;
+  			
+  			ZWDialog.Alert2(_sensor.uuid+'_'+_sensor.suid, ComposeSensorLayout_Outline(_sensor, _height), _sensor.name, _width, _height + 80, _top);
+  		}
+    }
+  	//-----------------------------------------------------------------------------------------------
+  	function OnPopupWindowClose()
+    {	  
+  		document.getElementById('popup_window').close();
+    }
+  	//-----------------------------------------------------------------------------------------------
+  	function ComposedSensorPresentHTML(_info, _data)
+    {	
+  		var _value = (_data == null ? null : _data.results[0]);   	  			  			
+		var _row_text = ComposedSensorRowInfo(_info, (_value == null || _value.system_time == null) ? null : { system_time : new Date(_value.system_time).GetUTC(), values : [ _value ] });  	
+		
+		return _row_text;
+    }
+  	//-----------------------------------------------------------------------------------------------
+  	function RefreshSensorLastData(_info)
+    {	  		
+  		if(_info != null)
+  			_User.getLastDataParallel(_info.id, 1, function(_id, _data)			
+			{   					
+				var _listitem = document.getElementById(_id);
+				if(_listitem != null && _listitem.sensor != null)
+				{
+					var _html = ComposedSensorPresentHTML(_listitem.sensor, JSON.parse(_data));   	   					
+	   				if(_html != null) _listitem.innerHTML = _html;
+				}
+			});  	
+    }   
+	//-----------------------------------------------------------------------------------------------
+  	function UpdateVisibleSensorsLastData()
+    {	  		
+   		for(var i=0;i<_SensorsData.length;i++)
+   		{
+   			var _sensor = _SensorsData[i];
+   			var _info = GetSensorInfo(_sensor);
+   			   			
+   			RefreshSensorLastData(_info);
+   		}
+    }   
+	//-----------------------------------------------------------------------------------------------
+  	function ShowSensors(_filter)
+    {	  		
+ 		if(_filter == null || _filter.lenght <= 0) return;
+ 		
+  		var _table = document.getElementById('table');   		
+   		var _visible_sensors = []
+   		var _source_uuid = 'all';    	
+   		
+   		_table.innerHTML = '<thead style="background-color: #e6f7ff;"><tr id="colmns"></tr></thead><tbody id="content"></tbody>';
+   		
+   		for(var i=0;i<_SensorsData.length;i++)
+   		{
+   			var _sensor = _SensorsData[i];
+   			if(_source_uuid == 'all' || _source_uuid == _sensor.uuid)
+	   			if(_sensor != null && SensorTypeMatching(_sensor, _filter))
+	   			{
+	   				if(_sensor.parent == null && _sensor.suid.length > 0)
+	   					_sensor.parent = FindDeviceSource(_sensor.uuid);
+	   				
+	   				_visible_sensors.push(GetSensorInfo(_sensor));
+	   				
+	   				var _index =_visible_sensors.length - 1;
+	   				_visible_sensors[_index].index = _index;
+	   			}
+   		}
+   		
+   		var _colmns = document.getElementById('colmns');   
+   		var _content = document.getElementById('content');  
+   		
+   		_colmns.innerHTML += '<td style="width: 80px;" id="td_item_count">No.</td>';
+   		_colmns.innerHTML += '<td style="width: 20%;">名稱</td>';
+   		_colmns.innerHTML += '<td style="width: 10%;">類別</td>';
+   		_colmns.innerHTML += '<td style="width: 60px;">電力</td>';
+   		_colmns.innerHTML += '<td style="width: 120px;">更新時間</td>';
+   		_colmns.innerHTML += '<td style="width: 40%;">目前狀態</td>';
+   		_colmns.innerHTML += '<td>備註</td>';
+   		
+  		for(var i=0;i<_visible_sensors.length;i++)
+  		{  			
+  			var _info = _visible_sensors[i];  		
+  			var _row_text = ComposedSensorPresentHTML(_info, null);  		  			
+  			var _html = '<tr id="{0}" style="font-size: 12px; cursor: pointer;" onclick="OnSensorListClick(event, this)">{1}</tr>'; 
+  			
+	  		if(_row_text != null) 
+	  		{
+	  			_html = _html.replace('{0}', _info.id);
+	 			_html = _html.replace('{1}', _row_text);
+	  		}	  		
+	  		
+	  		_content.innerHTML += _html;
+  		}
+  		
+  		for(var i=0;i<_visible_sensors.length;i++)
+  			document.getElementById(_visible_sensors[i].id).sensor = _visible_sensors[i];
+  		
+  		window.setTimeout(UpdateVisibleSensorsLastData, 100);
+    }   
+	//-----------------------------------------------------------------------------------------------
+  	function ComposedSensorRowInfo(_info, _data)
+    {	  		
+  		if(_info != null)
+  		{
+	  		var _text = _data == null ? '' : ComposedSensorStatus(_info, _data);  		
+	  		var _date = (_data != null && _data.system_time != null) ? new Date(_data.system_time+_User.TimezoneOffset).MDT() : (_text.length > 0 ? new Date().MDT() : '');
+	  		
+	  		if(_text != null)
+	  		{
+	  			var _html = '<td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td>';	
+	  			var _battery = ComposeSensorBattery(_info, _data);
+	  			
+		  		_html = _html.replace('{0}', _info.index+1);
+		  		if(_info.title == "UNKNOWN")
+		  			_html = _html.replace('{1}', (_info.parent_name == null ? '' : '['+_info.parent_name+'] ') + _info.desc);
+		  		else
+					_html = _html.replace('{1}', (_info.parent_name == null ? '' : '['+_info.parent_name+'] ') + _info.title);
+				_html = _html.replace('{2}', _info.desc);
+				_html = _html.replace('{3}', _battery >= 0 ? _battery+'%' : '-');
+				_html = _html.replace('{4}', _date);
+				_html = _html.replace('{5}', _text);
+				_html = _html.replace('{6}', '');
+				
+				return _html;
+	  		}
+  		}
+  		
+  		return null;
+    }
+	//-----------------------------------------------------------------------------------------------
+  	function ComposedSensorRowInfoForTrigger(_info, _data, _showText)
+  	{
+  		if(_info != null)
+        {
+            var _text = _data == null ? '' : ComposedSensorStatus(_info, _data);        
+            var _date = (_data != null && _data.system_time != null) ? new Date(_data.system_time+_User.TimezoneOffset).MDT() : (_text.length > 0 ? new Date().MDT() : '');
+            
+            if(_text != null)
+            {
+                var _html = '<td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td><td>{6}</td>'; 
+                var _battery = ComposeSensorBattery(_info, _data);
+                
+                _html = _html.replace('{0}', _info.index+1);
+                _html = _html.replace('{1}', (_info.parent_name == null ? '' : '['+_info.parent_name+'] ') + _info.title);
+                _html = _html.replace('{2}', _info.desc);
+                _html = _html.replace('{3}', _battery >= 0 ? _battery+'%' : '-');
+                _html = _html.replace('{4}', _date);
+                _html = _html.replace('{5}', (_showText) ? '<font style="color: #880000;">已按鈕</font>': '<font style="color: #880000;">未按鈕</font>');
+                _html = _html.replace('{6}', '');
+                
+                return _html;
+            }
+        }
+        
+        return null;
+  	}
+	//-----------------------------------------------------------------------------------------------
+  	function ComposedSensorStatus(_info, _data)
+    {	
+  		var _str = '';		
+  		
+  		if(_info != null && _data != null)  
+  			switch(_info.desc)
+			{
+				case _SensorDescription_PIR:
+				case _SensorDescription_Trigger:
+				case _SensorDescription_Switcher:
+				case _SensorDescription_FireDetector:
+				case _SensorDescription_SmokeDetector:
+					var _values = _data.values;
+										
+					if(_values != null)
+						_str += '<font style="color: #880000;">' + ComposeSensorEventMsg(_info, _values[0], false) + '</font>';
+					else
+						_str += JSON.stringify(_data);	
+				break;
+				case _SensorDescription_DoorTrigger:
+					var _values = _data.values;
+					if(_values != null && _values[0].data != null)
+						_str += '<font style="color: #880000;">' + ComposeSensorEventMsg(_info, _values[0].data, false) + '</font>';
+				break;
+				case _SensorDescription_TempHumi:		
+				case _SensorDescription_TempHumi2:				
+				{
+					_data = ComposedTempHumi(_info, _data.values);
+					if(_data != null)
+					{
+						_info.temp = _data[0].temp != null ? _data[0].temp : _info.temp;
+					 	_info.humi = _data[0].humi != null ? _data[0].humi : _info.humi;
+					 	
+					 	if(_info.temp != null) _str += '<font style="color: #880000;">溫度 : '+ _info.temp.toFixed(2) + ' ' + _info.scripts[0].unit + '</font>';
+					 	if(_info.temp != null && _info.humi != null) _str += '<font style="color: #000000;">&nbsp;&nbsp;|&nbsp;&nbsp;</font>';
+					 	if(_info.humi != null) _str += '<font style="color: #880000;">濕度 : '+ _info.humi.toFixed(2) + ' ' + _info.scripts[1].unit + '</font>';
+					}
+				}
+				break;				
+				case _SensorDescription_Server:
+				{
+					var _values = _data.values;
+					if(_values != null && _values[0].system.cpu_usage != null)
+					{	
+						_str += '<font style="color: #880000;">CPU : '+_values[0].system.cpu_usage+' %</font>';
+						_str += '<font style="color: #000000;">&nbsp;&nbsp;|&nbsp;&nbsp;</font>';
+						_str += '<font style="color: #008800;">MEM : '+(_values[0].system.mem_usage/1024).toFixed(2)+' GB</font>';
+						_str += '<font style="color: #000000;">&nbsp;&nbsp;|&nbsp;&nbsp;</font>';
+						_str += '<font style="color: #000088;">Thread : '+_values[0].system.thread_number+' </font>';
+					}
+					else
+						_str = null;
+				}
+				break;
+				case _SensorDescription_AirQuality:
+				{
+					if(_info.type[1] == 'twairmeter')
+					{
+						_data = ComposedAirQuality2(_data.values);						
+						if(_data != null && _data.pm25_avg != null) _str += '<font style="color: #880000;">PM2.5 : '+_data.pm25_avg.toFixed(2)+'</font>&nbsp;&nbsp;|&nbsp;&nbsp;';
+						if(_data != null && _data.pm10_avg != null) _str += '<font style="color: #008800;">PM10 : '+ _data.pm10_avg.toFixed(2) +'</font>';
+					}
+					else
+					{
+						_data = ComposedAirQuality(_info, _data.values);
+						if(_data != null)
+						{
+							_info.co2 = _data[0].co2 != null ? _data[0].co2 : _info.co2;
+							_info.quality = _data[0].quality != null ? _data[0].quality : _info.quality;
+							
+							if(_info.quality != null) _str += '<font style="color: #880000;">Quality : '+_info.quality+'</font>&nbsp;&nbsp;|&nbsp;&nbsp;';
+							if(_info.co2 != null) _str += '<font style="color: #008800;">綜合指數 : '+ _info.co2.toFixed(2) +' ppm</font>';
+						}
+					}
+				}					
+				break;
+				case _SensorDescription_Camera:
+				break;
+				case _SensorDescription_bed:
+				{
+					var userName = "未知";
+					if (null != _info.ext3 && _info.ext3.length > 0) {
+						var ext3 = JSON.parse(_info.ext3);
+	                    
+	                    userName = (ext3.userName != null) ? ext3.userName : "未知";
+					}
+					
+					var _values = _data.values;
+					
+					var eventCode = _values[0].data["EventCode"];
+					var eventCodeStr = "未知";
+					switch (eventCode) {
+						case 0:
+							eventCodeStr = "離床";
+	                        break;
+	                    case 1:
+	                    	eventCodeStr = "下床緣";
+	                        break;
+	                    case 2:
+	                    	eventCodeStr = "坐";
+	                        break;
+	                    case 3:
+	                    	eventCodeStr = "躺";
+	                        break;
+	                    case 4:
+	                    	eventCodeStr = "上床緣";
+	                        break;
+	                    case 5:
+	                    case 6:
+	                    	eventCodeStr = "久未翻身";
+	                    	break;
+	                    default:
+	                    	eventCodeStr = "未知";
+					}
+					
+					_str += '<font style="color: #880000;">';
+					_str += "使用者: " +  userName;
+					_str += '&nbsp;|&nbsp;';
+					_str += "狀態: " + eventCodeStr;
+					_str += '</font>';
+					
+				}
+				break;
+				case _SensorDescription_siren:
+					var _values = _data.values;
+					
+					var status = _values[0].status;
+					_str += '<font style="color: #880000;">';
+                    _str += (status == 1) ? '燈光開啟' : "燈光熄滅";
+                    _str += '</font>';
+				break;
+				case _SensorDescription_PHSensor:
+				{
+					var _values = _data.values;
+					
+					//raw data值要轉換以後才可以使用
+					_str += '<font style="color: #880000;">';
+					_str += 'PH&nbsp;:&nbsp;';
+					_str += (_values[0].data["PH"] / 1000).toFixed(2);
+					_str += '&nbsp;|&nbsp;';
+					
+					_str += '溫度&nbsp;:&nbsp;';
+					_str += (_values[0].data["TM"] / 1000).toFixed(2) + "&nbsp;°C";
+					_str += '&nbsp;|&nbsp;';
+					
+					_str += 'ORP&nbsp;:&nbsp;';
+					_str += (_values[0].data["mV"] / 1000).toFixed(2);
+					_str += '</font>';
+				}
+				break;
+				case _SensorDescription_CO2:		
+				case _SensorDescription_Temp3CH:
+				case _SensorDescription_LigthMeter:
+				case _SensorDescription_Oxygen:
+				case _SensorDescription_ConductivityMeter:
+				case _SensorDescription_AnemoMeter:
+					_str = CombinationSensorData(_info , _data);
+				break;
+				default:
+					_data = JSON.stringify(_data);
+					if(_data.length < 500) _str += _data;
+				break;
+			}
+  			
+		return _str;
+    }
+	//-----------------------------------------------------------------------------------------------
+	function CombinationSensorData(_info , _data)
+	{
+		try
+		{
+			var _values = _data.values;
+
+			var _device = getEnvironmentSensor(_info);
+
+			if(_device == null) return;
+
+			var _reciveData = NumToHex(_values[0].data);
+			var _numType = parseInt(_reciveData[0]);
+
+			console.log(_device.desc + "\t Num : " + _device.indexNum + "  count : " + _device.count + " Data[0] : " + _reciveData[0] + " data : " + JSON.stringify(_reciveData.slice(1)));
+			
+			if(_numType == 0)return;
+
+			if(_numType ==  81)
+			{
+				_device.data     = [];
+				_device.count    = 1;
+				_device.indexNum = 81;
+				_device.data[(_numType - 81)] = _reciveData.slice(1);
+			}
+			else
+			{
+				if( _numType   ==  _device.indexNum ) return;
+
+				_device.data[(_numType - 81)] = _reciveData.slice(1);
+				_device.indexNum = _numType;
+				_device.count++;
+
+			}
+
+			
+
+			if( _device.count / 2 == _device.maxNum)
+			{
+				return GetBehaviorData(_device);
+			}
+
+		}catch(_e){ console.log(_e); }
+		return null;	
+	}
+	//-----------------------------------------------------------------------------------------------
+    function GetBehaviorData(_device)
+    {    
+    	try
+    	{
+    		var _str = '';
+
+			// for(var i=0; i<_device.maxNum * 2; i++)
+			// {
+			// 	console.log(_device.desc + "\t Data[" + i + "] : " + _device.data[i]);
+			// }
+
+			for(var i=0 ; i<_device.maxNum ; i++)
+			{
+				var _dataTemp = _device.data[ 1 + (i*2) ];
+				_str += SeModeData( _device.desc , i , _dataTemp);
+			}
+
+			return _str;
+
+		}catch(_e){ console.log(_e); }
+		return null;	
+    }
+ 	//-----------------------------------------------------------------------------------------------
+    function SeModeData(_desc , _index , _data)
+    {    
+    	try
+    	{
+    		var _str = '';
+			
+			switch(_desc)
+			{	
+				case _SensorDescription_CO2:
+					switch(_index)
+					{
+						case 0:
+							return  '<font style="color: #880000;">RH 	: ' + GetEnvironmentParameter(_data , " %RH") + '</font>'; 
+						break;
+						case 1:
+							return  '<font style="color: #880000;">溫度 : ' + GetTempParameter(_data) + '</font>';
+						break;
+						case 2:
+							return  '<font style="color: #880000;">PPM 	: ' + GetEnvironmentParameter(_data , " ppm") + '</font>';
+						break;						
+					}
+				break;
+				case _SensorDescription_Temp3CH:
+					switch(_index)
+					{
+						case 0:
+							return  '<font style="color: #880000;">溫度(一) : ' + GetTempParameter(_data) + '</font>'; 
+						break;
+						case 1:
+							return  '<font style="color: #880000;">溫度(二)	: ' + GetTempParameter(_data) + '</font>';
+						break;
+						case 2:
+							return  '<font style="color: #880000;">溫度(三) : ' + GetTempParameter(_data) + '</font>';
+						break;						
+					}				
+				break;
+				case _SensorDescription_LigthMeter:
+					switch(_index)
+					{
+						case 0:
+							return  '<font style="color: #880000;">:' + _SensorDescription_LigthMeter + ' : ' + GetEnvironmentParameter(_data , " LUX") + '</font>'; 
+						break;
+						case 1:
+							return	'<font style="color: #880000;">溫度 : ' + GetTempParameter(_data) + '</font>';
+						break;
+					}
+				break;
+				case _SensorDescription_Oxygen:
+					switch(_index)
+					{
+						case 0:
+							return  '<font style="color: #880000;">' + _SensorDescription_Oxygen + ' : ' + GetEnvironmentParameter(_data , " mg/L") + '</font>'; 
+						break;
+						case 1:
+							return	'<font style="color: #880000;">溫度 : ' + GetTempParameter(_data) + '</font>';
+						break;
+					}
+				break;
+				case _SensorDescription_ConductivityMeter:
+					switch(_index)
+					{
+						case 0:
+							return	'<font style="color: #880000;">' + _SensorDescription_ConductivityMeter + ' : ' +GetEnvironmentParameter(_data , " m/s") + '</font>'; 
+						break;
+						case 1:
+							return	'<font style="color: #880000;">溫度 : ' + GetTempParameter(_data) + '</font>';
+						break;
+					}			
+				break;
+				case _SensorDescription_AnemoMeter:
+					switch(_index)
+					{
+						case 0:
+							return	'<font style="color: #880000;">' + _SensorDescription_AnemoMeter + ' : ' + GetEnvironmentParameter(_data , " m/s") + '</font>'; 
+						break;
+						case 1:
+							return	'<font style="color: #880000;">溫度 : ' + GetTempParameter(_data) + '</font>';
+						break;
+					}
+				break;
+			}
+		}catch(_e){ console.log(_e); }
+		return null;	
+    }   
+    //-----------------------------------------------------------------------------------------------
+    function GetEnvironmentParameter(_data , _unit)
+    {   
+    	try
+    	{  	
+			var 　_str = '';
+			
+			for(var i=1 ; i<=6 ; i++)
+			{	
+				var _Temp = GetLowNum(_data,i);
+													
+				if( i != 6)
+				{
+					if(_Temp != 0)
+						_str += ""+ _Temp;
+					else if(i == 5 && _Temp == 0)
+						　_str += "0";
+				}
+				else
+				{
+					　_str += "." + _Temp + " " + _unit +  "</br>";
+				}
+			}	
+			return 　_str;
+
+		}catch(_e){ console.log(_e); }
+		return "";	
+    }
+	//-----------------------------------------------------------------------------------------------	
+	function GetTempParameter(_data)
+    {     	
+
+    	try
+    	{  	
+			var _str = '';
+			
+			for(var i=4 ; i<=6 ;i ++)
+			{	
+				var _Temp = GetLowNum(_data,i);
+													
+				if( i != 6)
+				{
+					if(_Temp != 0)
+						_str += ""+ _Temp;
+					else if(i == 5 && _Temp == 0)
+						　_str += "0";
+				}
+				else
+				{
+					　_str+= "." + _Temp + "&nbsp;°C" + "</br>";;
+				}
+			}				
+			return 　_str;
+			
+		}catch(_e){ console.log(_e); }
+		return "";			
+    }
+    //-----------------------------------------------------------------------------------------------
+	function  EnvironmentSensor (_info,_maxNum){
+		try
+		{
+			this.suid     		=	_info.suid;
+			this.desc     		=	_info.desc;
+			this.data     		=  	Array(_maxNum);
+			this.maxNum			=  	_maxNum;
+			this.indexNum		=  	0;
+			this.count			=  	0;
+
+			for(var i=0; i< this.maxNum * 2 ; i++)
+			{
+				this.data[0] = '0';
+			}
+
+		}catch(_e){ console.log(_e); }
+	}
+	var EnvironmentSensorArray = [];
+	//-----------------------------------------------------------------------------------------------
+	function getEnvironmentSensor(_info)
+	{
+		try{
+			if(EnvironmentSensorArray.length == 0)
+			{
+				return CreateEnvironmentSensor(_info);
+			}
+			else
+			{
+				for(var i = 0; i < EnvironmentSensorArray.length; i++) 
+				{
+					//console.log("Loop["+ i +"] : "+ EnvironmentSensorArray[i].suid + " This suid : " + _info.suid);
+
+			    	if (EnvironmentSensorArray[i].suid == _info.suid) 
+			    	{
+			    		//console.log("Already Device length : " + EnvironmentSensorArray.length + "  suid : " + _info.suid);
+			      		return EnvironmentSensorArray[i];
+			      	}
+				}
+			    //console.log("Create Device length : " + EnvironmentSensorArray.length + "  suid : " + _info.suid);
+				return CreateEnvironmentSensor(_info);
+			}
+		}catch(_e){ console.log(_e); }
+		return null;
+	}
+	//-----------------------------------------------------------------------------------------------
+	function CreateEnvironmentSensor(_info)
+	{
+    	try{
+    		var _maxNum = 0;
+    		switch(_info.desc)
+			{	
+				case _SensorDescription_CO2:
+					_maxNum = 3;
+				break;
+				case _SensorDescription_Temp3CH:
+					_maxNum = 3;
+				break;
+				case _SensorDescription_LigthMeter:
+					_maxNum = 1;
+				break;
+				case _SensorDescription_Oxygen:
+					_maxNum = 2;
+				break;
+				case _SensorDescription_ConductivityMeter:
+					_maxNum = 2;
+				break;
+				case _SensorDescription_AnemoMeter:
+					_maxNum = 2;
+				break;
+			}
+
+			var _object = new EnvironmentSensor(_info, _maxNum);
+			EnvironmentSensorArray.push(_object);
+
+			return _object;
+		}catch(_e){ console.log(_e); }
+	}
+    function LoadDevices()
+    {     	
+        try
+		{
+	    	var _data=_User.GetUserDataSrcList();       
+	        if(_data != null)
+	        {                   	
+	           var _root = JSON.parse(_data);
+	           
+	           return _root.results;
+	        }
+		}catch(_e){ console.log(_e); }
+        return null;
+    }
+	//-----------------------------------------------------------------------------------------------
+   	function OnFilterChange(_event)
+   	{   		
+  		if(_event != null && _event.target != null && _event.target.innerHTML != null && _event.target.innerHTML && _event.target.innerHTML.includes('"tab"') == false)
+   			ShowSensors(_event.target.innerHTML);
+   	}
+	//-----------------------------------------------------------------------------------------------
+   	function OnSensorsData(_payload)
+   	{    		
+   		try
+		{
+			var _data = JSON.parse(_payload.data);
+
+   			if(_data.suid != null && _data.suid.length > 0)
+   			{   				
+   				var _row = document.getElementById(_data.uuid+'.'+_data.suid);
+   				if(_row != null)
+   				{   					
+   					var _sensor = _row.sensor;
+   					
+   					var _text;
+   					if (_sensor.desc == _SensorDescription_Trigger) {
+   						_text = ComposedSensorRowInfoForTrigger(_sensor, _data, true);
+                        setTimeout(function() {
+                            _row.innerHTML = ComposedSensorRowInfoForTrigger(_sensor, _data, false);
+                        }, 3 * 1000);
+                    } else {
+
+						// console.log("sensor : " + JSON.stringify(_sensor) );
+						// console.log("Data   : " + JSON.stringify(_data) );
+      //               	console.log("------------------------------------------------");
+
+                    	_text = ComposedSensorRowInfo(_sensor, _data);
+                    }
+	   				
+	   				if(_text != null)
+	   					_row.innerHTML = _text;
+   				}
+   			}
+		}
+		catch(_ept){};
+   	}
+	//-----------------------------------------------------------------------------------------------
+  	function RefreshSensorInfo(_info)
+    {	  		  		
+  		if(_info != null)
+  			_User.GetUserDataSrcInfo_Async(_info.id, _info.id, function(_id, _data)
+			{   			
+				var _listitem = document.getElementById(_id);
+				if(_listitem != null)
+				{
+					var _new_info = GetSensorInfo(JSON.parse(_data));
+					if(_new_info != null && _listitem.sensor != null)
+					{
+						_new_info.index = _listitem.sensor.index;	
+						_new_info.parent = _listitem.sensor.parent;
+						_new_info.parent_name = _listitem.sensor.parent_name;
+						
+						_listitem.sensor = _new_info;						
+						RefreshSensorLastData(_new_info);
+					}
+				}
+			});  	
+    }   
+	//-----------------------------------------------------------------------------------------------
+   	function ReInit()
+   	{    		
+   		location.reload();
+   	}
+	//-----------------------------------------------------------------------------------------------
+	window.onpopstate = function(_e)
+	{		
+  		if(_e != null && _e.type != null)
+  			switch(_e.type)
+  			{
+  				case 'update':
+  					RefreshSensorInfo(_e.info);
+  				break;
+  				case 'remove':
+  					ReInit();
+  				break;
+  			}
+	}
+	//-----------------------------------------------------------------------------------------------
+	window.onload = function()
+	{					
+		InitTabs();
+		// InitArray();
+		InitSensors();		
+		ShowSensors(SensorDescriptionList[0]);
+   		SubscribeData();
+   		
+		window.setInterval(ReInit, 12*60*60*1000);
+	}
+</script>
+</body>
+</html>

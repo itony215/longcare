@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="/scripts/longcare/css/pages/plan.css">
+	<link rel="stylesheet" type="text/css" href="/scripts/longcare/css/main.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/pages/sensor.css">
+    <link rel="stylesheet" href="/scripts/longcare/css/leaflet.css" >
+    <link rel="stylesheet" href="/scripts/reports/report_method2/nv.d3.css" type="text/css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<script src="/scripts/libs/mars-client.js"></script>	
+	<script src="/scripts/devices/profiles.js"></script>
+	<script src="/scripts/reports/tools.js"></script>
+    <script src="/scripts/reports/report_method2/d3.js" charset="utf-8"></script>
+    <script src="/scripts/reports/report_method2/lib/stream_layers.js"></script>
+    <script src="/scripts/reports/report_method2/nv.d3.js"></script> 
+</head>
+<body>
+	<div class="row" id="table_row">
+	<!-- sensor panel 1	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>新竹1號機房-溫度</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/plug.png"  alt="img">
+						<h3>32.8度</h3>
+					</div>
+					<!-- <div class="sensorPost_btn">
+						<a href="">即時</a>
+						<a href="">平均</a>
+						<a href="">最高/最低</a>					
+					</div> -->
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+
+							<div class="plug_bg ">
+ 
+								<div class="plug_img">
+								
+									<div class="col-md-3 col-xs-3 ">
+										<input type="image" src="/scripts/longcare/images/plug_on.png"  alt="Submit" id="plug_switch1" onclick="" />
+										<label for="plug_switch1"><p class="plug_p_on">ON</p></label>
+									</div>
+									<div class="col-md-3 col-xs-3">
+										<input type="image" src="/scripts/longcare/images/plug_on.png"  alt="Submit" id="plug_switch2" onclick="" />
+										<label for="plug_switch2"><p class="plug_p_on">ON</p></label>
+									</div> 
+									<div class="col-md-3 col-xs-3">
+										<input type="image" src="/scripts/longcare/images/plug_off.png"  alt="Submit" id="plug_switch3" onclick="" />
+										<label for="plug_switch3"><p class="plug_p_off">OFF</p></label>
+									</div>
+									<div class="col-md-3 col-xs-3">
+										<input type="image" src="/scripts/longcare/images/plug_none.png"  alt="Submit" id="plug_switch3" onclick="" />
+										<label for="plug_switch3"><p class="plug_p_none">NONE</p></label>
+									</div>
+									
+								</div>
+							</div>
+				</div>
+			</div>  
+		</div>
+
+
+		<!-- sensor panel 2	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>新竹1號機房-燈控開關</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/light_switch.png"  alt="img">
+						<h3>已開啟</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="light_switch">
+						<a href=""><img src="/scripts/longcare/images/light_on.png"><p>ON</p>
+						</a>
+					</div>
+				</div>
+			</div>  
+		</div>
+
+		<!-- sensor panel 3	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>A走道-火警警報器</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/fire.png"  alt="img">
+						<h3>正常運作中</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="light_switch">
+						<img src="/scripts/longcare/images/v.png">
+					</div>
+				</div>
+			</div>  
+		</div>
+
+		<!-- sensor panel 4	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>偵煙警報器</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/smoke.png"  alt="img">
+						<h3>正常運作中</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="light_switch">
+						<img src="/scripts/longcare/images/v.png">
+					</div>
+				</div>
+			</div>  
+		</div>
+
+		<!-- sensor panel 5	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>跌倒偵測</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/fall.png"  alt="img">
+						<h3>name-緊急狀態</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="fall">
+						<img src="/scripts/longcare/images/fall_3_r.png">
+						<img src="/scripts/longcare/images/help_r.png">
+					</div>
+				</div>
+			</div>  
+		</div>
+
+		<!-- sensor panel 6	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>磁簧開關</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/door.png"  alt="img">
+						<h3>關閉</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="light_switch">
+						<img src="/scripts/longcare/images/lock.png">
+					</div>
+				</div>
+			</div>  
+		</div>
+
+		<!-- sensor panel 7	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>漏水偵測</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/slack.png"  alt="img">
+						<h3>-</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="light_switch">
+						<img src="/scripts/longcare/images/v.png">
+					</div>
+				</div>
+			</div>  
+		</div>
+
+		<!-- sensor panel 8	 -->
+		<div class="col-md-4 col-sm-6 col-xs-12">
+			<div class="panelwrap">
+				<!-- header -->
+				<div class="sensor_header">
+					<h4>PIR</h4>
+					<ul class="navbar-right p_menu">
+		              <li class="dropdown">
+	                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"  aria-expanded="false"><i class="fa fa-wrench"></i></a>
+	                    <ul class="dropdown-menu">
+	                      <li><a href="#">排程設定</a></li>
+	                      <li><a href="#">功能設定</a></li>
+	                    </ul>
+	                  </li>
+		            </ul>
+				</div>
+				<!-- sensor post -->
+				<div class="sensor_post">				
+					<div class="sensor_data">
+						<img src="/scripts/longcare/images/pir.png"  alt="img">
+						<h3>-</h3>
+					</div>
+					<br style="clear:both">
+				</div>
+		        <!-- sensor chart -->
+				<div class="sensor_chart">
+					<div class="light_switch">
+						<img src="/scripts/longcare/images/v.png">
+					</div>
+				</div>
+			</div>  
+		</div>
+
+	</div>
+<!-- <script>
+	 $(function(){
+		  var btn = $('#power_btn');
+		  $('#light_switch').click(function(){
+		      if(btn.attr('class')==='light_on'){
+		        btn.removeClass('light_on');
+		        btn.addClass('light_off');
+		       }else{
+		        btn.removeClass('light_off');
+		        btn.addClass('light_on');
+		       }
+		   });
+	 });
+</script> -->
+</body>
+</html>
